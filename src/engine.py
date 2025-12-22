@@ -17,3 +17,19 @@ def player_move(direction):
     st.player_x = st.player_x + math.cos(angle) * st.player_speed
     st.player_y = st.player_y + math.sin(angle) * st.player_speed
 
+    limit_player_position()
+
+
+def limit_player_position():
+    if st.player_x < 0:
+        st.player_x = 0
+    elif st.player_x >= len(st.map_data) * st.TILE_SIZE:
+        st.player_x = len(st.map_data) * st.TILE_SIZE - 1
+
+    if st.player_y < 0:
+        st.player_y = 0
+    elif st.player_y >= len(st.map_data[0]) * st.TILE_SIZE:
+        st.player_y = len(st.map_data[0]) * st.TILE_SIZE - 1
+
+
+

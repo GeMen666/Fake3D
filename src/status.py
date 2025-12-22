@@ -14,10 +14,11 @@ TILE_SIZE = 64
 MOVE_STEP = 1
 
 # 玩家状态
-player_x = 160.0
-player_y = 160.0
+player_x = 96.0
+player_y = 96.0
 player_speed = 1
 view_angle = 0.0
+
 
 # 游戏状态
 paused = False

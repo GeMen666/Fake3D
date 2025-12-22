@@ -2,9 +2,13 @@
 
 import pygame
 import time
+import config
 from engine import *
 from input_event import *
 from status import *
+from render_draw import draw_map
+from render_calculate import all_calculate
+
 
 pygame.init()
 screen = pygame.display.set_mode((config.WINDOW_WIDTH,config.WINDOW_HEIGHT))
@@ -33,9 +37,13 @@ while running:
         if st.key_states['right']:
             player_move('d')
 
-    print(f"({st.paused},{st.mouse_grabbed},{st.mouse_visible},{st.rel_x},{st.view_angle},{st.player_x},{st.player_y})")
+    # print(f"({st.paused},{st.mouse_grabbed},{st.mouse_visible},{st.rel_x},{st.view_angle},{st.player_x},{st.player_y})")
 
     screen.fill((0, 0, 0))
+    
+    all_calculate()
+
+    draw_map(screen)
 
     pygame.display.flip()
 
