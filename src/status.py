@@ -1,0 +1,27 @@
+# status.py ：全局数据层（所有跨文件共享的数据都存在这里）
+
+# 地图数据
+map_data = [
+    [1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 1],
+    [1, 0, 1, 0, 1],
+    [1, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1]
+]
+
+# 游戏配置
+TILE_SIZE = 64
+MOVE_STEP = 1
+
+# 玩家状态
+player_x = 160.0
+player_y = 160.0
+view_angle = 0.0
+
+# 游戏状态
+paused = False
+mouse_visible = False
+mouse_grabbed = True
+rel_x = 0
+rel_y = 0
+running = True
