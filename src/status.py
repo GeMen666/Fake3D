@@ -16,6 +16,7 @@ MOVE_STEP = 1
 # 玩家状态
 player_x = 160.0
 player_y = 160.0
+player_speed = 1
 view_angle = 0.0
 
 # 游戏状态
@@ -24,4 +25,11 @@ mouse_visible = False
 mouse_grabbed = True
 rel_x = 0
 rel_y = 0
-running = True
+
+# 按键状态
+key_states = {
+    'up': False,
+    'down': False,
+    'left': False,
+    'right': False
+}
