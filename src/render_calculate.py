@@ -4,10 +4,6 @@ import status as st
 from utils import *
 import config as conf
 
-processing_grid = [
-    [False for _ in range(len(st.map_data[0]))]
-    for _ in range(len(st.map_data))
-]
 
 visited_grid = [
     [False for _ in range(len(st.map_data[0]))]
@@ -15,9 +11,6 @@ visited_grid = [
 ]
 
 q = queue.Queue()
-
-nodes = []          # 所有节点列表（像素坐标）
-valid_nodes = {}    # 节点是否在视野内：{(x,y): True/False} （像素坐标）
 
 
 def select_forward_tile():
@@ -45,18 +38,18 @@ def select_forward_tile():
             q.put(target_tile)
 
 def reset_grids():
-    global nodes, valid_nodes, processing_grid, visited_grid
-    nodes.clear()
-    valid_nodes.clear()
-    for i in range(len(processing_grid)):
-        for j in range(len(processing_grid[0])):
-            processing_grid[i][j] = False
+    global visited_grid
+    st.nodes.clear()
+    st.valid_nodes.clear()
+    for i in range(len(st.processing_grid)):
+        for j in range(len(st.processing_grid[0])):
+            st.processing_grid[i][j] = False
             visited_grid[i][j] = False
 
 def bfs_select_tile():
-    global q, processing_grid, visited_grid
+    global q, visited_grid
     while not q.empty():
-        cur_pos = q.get()  # (row, col)
+        cur_pos = q.get()
         if (cur_pos[0] < 0 or cur_pos[0] >= len(st.map_data) or
             cur_pos[1] < 0 or cur_pos[1] >= len(st.map_data[0])):
             continue
@@ -67,7 +60,7 @@ def bfs_select_tile():
         visited_grid[cur_pos[0]][cur_pos[1]] = True
         
         if is_in_fov:
-            processing_grid[cur_pos[0]][cur_pos[1]] = True
+            st.processing_grid[cur_pos[0]][cur_pos[1]] = True
             if cur_pos[0]+1 < len(st.map_data) and not visited_grid[cur_pos[0]+1][cur_pos[1]]:
                 q.put((cur_pos[0]+1, cur_pos[1]))
             if cur_pos[0]-1 >= 0 and not visited_grid[cur_pos[0]-1][cur_pos[1]]:
@@ -77,8 +70,8 @@ def bfs_select_tile():
             if cur_pos[1]-1 >= 0 and not visited_grid[cur_pos[0]][cur_pos[1]-1]:
                 q.put((cur_pos[0], cur_pos[1]-1))
 
+
 def check_current_tile(tile_pos):
-    global valid_nodes, nodes
     row, col = tile_pos
     half_fov = math.radians(conf.FOV / 2)
 
@@ -88,23 +81,19 @@ def check_current_tile(tile_pos):
 
     tile_nodes = get_tile_nodes(col, row)
     has_valid_node = False
-
     for node_x, node_y in tile_nodes:
-        if (node_x, node_y) not in nodes:
-            nodes.append((node_x, node_y))
+        if (node_x, node_y) not in st.nodes:
+            st.nodes.append((node_x, node_y))
         
         # 计算相对位置
         delta_x = node_x - st.player_x
         delta_y = node_y - st.player_y
         
         # 计算节点相对于玩家的角度（基于屏幕坐标系）0°向右，90°向下，180°向左，270°向上
-        # 使用atan2计算，返回-pi到pi的范围
-        node_angle = math.atan2(delta_y, delta_x)
+        node_angle = math.atan2(delta_y, delta_x)    # 使用atan2计算，返回-pi到pi的范围
         
-        # 将view_angle转换为弧度
         view_angle_rad = math.radians(st.view_angle)
         
-        # 计算角度差（确保在-pi到pi范围内）
         angle_diff = node_angle - view_angle_rad
         
         # 将角度差标准化到-pi到pi范围内
@@ -117,13 +106,16 @@ def check_current_tile(tile_pos):
         
         # 判断是否在视野内
         in_fov = angle_diff <= half_fov
-        valid_nodes[(node_x, node_y)] = in_fov
+        st.valid_nodes[(node_x, node_y)] = in_fov
         
         if in_fov:
             has_valid_node = True
 
     if has_valid_node:
-        processing_grid[row][col] = True
+        st.processing_grid[row][col] = True
+    else:
+        for node_x, node_y in tile_nodes:
+            del st.valid_nodes[(node_x, node_y)]
         
     return has_valid_node
 
