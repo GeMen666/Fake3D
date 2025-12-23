@@ -25,9 +25,25 @@ valid_nodes = {}        # 视野范围节点是否有效（是否是墙体节点
 
 visible_nodes = {}      # 节点是否在视野内可见：{(x,y): True/False} （像素坐标）
 
-wall_line = []      # 可以看见的墙体线段 [(),(),()]
+fov_ray_q = []      # 视野射线 [((),()),(()()),(()())]
 
-fov_ray_q = []      # 视野射线
+wall_line = []      # 可以看见的墙体线段 [((),()),(()()),(()())]
+
+
+def select_wall_line():
+    global wall_line
+    for row in range(len(processing_grid)):
+        for col in range(len(processing_grid[0])):
+            if processing_grid[row][col] and st.map_data[row][col] == 1:
+                tile_nodes =  get_tile_nodes(row,col)   # 节点顺序：上左0、上右1、下右2、下左3
+                tile_borders = get_tile_border(row,col)  # 边界顺序：上边界0、右边界1、下边界2、左边界3
+                count = 0
+                for node in tile_nodes:
+                    if node in visible_nodes:
+                        count += 1
+                
+            
+ 
 
 
 def select_forward_tile():
@@ -91,8 +107,8 @@ def bfs_select_tile():
             if cur_pos[1]-1 >= 0 and not visited_grid[cur_pos[0]][cur_pos[1]-1]:
                 tile_q.put((cur_pos[0], cur_pos[1]-1))
 
-
 def check_current_tile(tile_pos):
+    global nodes, in_fov_nodes, valid_nodes
     row, col = tile_pos
     half_fov = math.radians(conf.FOV / 2)
 
@@ -152,10 +168,36 @@ def check_node_in_fov(node_x, node_y, half_fov):
 
     return in_fov
 
+def check_nodes_is_visible():
+    global visible_nodes, valid_nodes
+
+    # 判断玩家方向是否是墙，如果是则说明该节点在墙的背面，是不可见的
+    # 判断玩家相对节点的方向
+    # 1：左上 2：右上 3：右下 4：左下
+    for node_x, node_y in valid_nodes:
+        if not valid_nodes[(node_x, node_y)]:
+            continue
+        tile = -1
+        if st.player_x > node_x and st.player_y < node_y:       # 右上
+            tile = get_direction_tile(node_x, node_y, 2)
+        elif st.player_x > node_x and st.player_y > node_y:     # 右下
+            tile = get_direction_tile(node_x, node_y, 3)
+        elif st.player_x < node_x and st.player_y > node_y:     # 左下
+            tile = get_direction_tile(node_x, node_y, 4)
+        elif st.player_x < node_x and st.player_y < node_y:     # 左上
+            tile = get_direction_tile(node_x, node_y, 1)
+        if tile == -1:
+            continue
+        if st.map_data[tile[1]][tile[0]] == 1:
+            visible_nodes[(node_x, node_y)] = False
+        else:
+            visible_nodes[(node_x, node_y)] = True
+
 
 def check_node_valid(node_x, node_y):
     if (node_x, node_y) in valid_nodes:
         return valid_nodes[(node_x, node_y)]
+
 
     # 我也不知道是节点哪个方向tile的索引了，不管了，能用就行
     index_x = int(node_x / st.TILE_SIZE) - 1
@@ -179,7 +221,6 @@ def check_node_valid(node_x, node_y):
         else:
             return False
 
-
     if count == 2 and index_x + 1 < map_width and index_y + 1 < map_height:
         if st.map_data[index_y][index_x] != st.map_data[index_y+1][index_x+1]:
             is_valid = False
@@ -187,6 +228,7 @@ def check_node_valid(node_x, node_y):
         is_valid = True
     elif count == 4:
         is_valid = False
+
 
     return is_valid
 
@@ -196,3 +238,4 @@ def all_calculate():
     reset_grids()
     select_forward_tile()
     bfs_select_tile()
+    check_nodes_is_visible()
