@@ -49,6 +49,9 @@ def draw_map(screen):
     for node in nodes:
         if in_fov_nodes[node]:
             if node in visible_nodes and visible_nodes[node]:
+                node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
+                node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
+                pygame.draw.line(screen, (0, 0, 255), (player_screen_x, player_screen_y), (node_screen_x, node_screen_y), 1)
                 color = (0, 255, 0)     # 绿色
             else:
                 color = (255, 255, 0)   # 黄色
@@ -59,4 +62,3 @@ def draw_map(screen):
         node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
         pygame.draw.circle(screen, color, (node_screen_x, node_screen_y), 2)
 
-    # 绘制射线

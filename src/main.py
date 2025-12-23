@@ -1,4 +1,4 @@
-# main 实现游戏窗口和主循环
+# main 实现窗口和主循环
 
 import pygame
 import time

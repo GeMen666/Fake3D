@@ -41,10 +41,6 @@ def select_wall_line():
                 for node in tile_nodes:
                     if node in visible_nodes:
                         count += 1
-                
-            
- 
-
 
 def select_forward_tile():
     global tile_q
@@ -78,6 +74,8 @@ def reset_grids():
     global visited_grid
     nodes.clear()
     in_fov_nodes.clear()
+    visible_nodes.clear()
+    valid_nodes.clear()
     for i in range(len(processing_grid)):
         for j in range(len(processing_grid[0])):
             processing_grid[i][j] = False
@@ -112,7 +110,7 @@ def check_current_tile(tile_pos):
     row, col = tile_pos
     half_fov = math.radians(conf.FOV / 2)
 
-    if (row < 0 or row >= len(st.map_data) or col < 0 or col >= len(st.map_data[0])):
+    if row < 0 or row >= len(st.map_data) or col < 0 or col >= len(st.map_data[0]):
         return False
 
     tile_nodes = get_tile_nodes(col, row)
@@ -168,6 +166,21 @@ def check_node_in_fov(node_x, node_y, half_fov):
 
     return in_fov
 
+
+def check_ray_is_cross_wall(star_x, star_y, end_x, end_y, tile_x, tile_y):
+
+    top, right, bottom, left = get_tile_border(tile_x, tile_y)
+
+    # 检查射线是否与对角线相交
+    if check_line_intersect((star_x, star_y), (end_x, end_y), (left, top), (right, bottom)):
+        return True
+    
+    if check_line_intersect((star_x, star_y), (end_x, end_y), (right, top), (left, bottom)):
+        return True
+
+    return False
+
+
 def check_nodes_is_visible():
     global visible_nodes, valid_nodes
 
@@ -178,20 +191,49 @@ def check_nodes_is_visible():
         if not valid_nodes[(node_x, node_y)]:
             continue
         tile = -1
+        corners = None
+        # 以node为中心，判断玩家相对节点的方向
         if st.player_x > node_x and st.player_y < node_y:       # 右上
             tile = get_direction_tile(node_x, node_y, 2)
+            corners = [(0, 1), (-1, 0), (-1, 1)]
         elif st.player_x > node_x and st.player_y > node_y:     # 右下
             tile = get_direction_tile(node_x, node_y, 3)
+            corners = [(0, -1), (-1, 0), (-1, -1)]
         elif st.player_x < node_x and st.player_y > node_y:     # 左下
             tile = get_direction_tile(node_x, node_y, 4)
+            corners = [(0, -1), (1, 0), (1, -1)]
         elif st.player_x < node_x and st.player_y < node_y:     # 左上
             tile = get_direction_tile(node_x, node_y, 1)
+            corners = [(0, 1), (1, 0), (1, 1)]
+        
         if tile == -1:
             continue
         if st.map_data[tile[1]][tile[0]] == 1:
             visible_nodes[(node_x, node_y)] = False
         else:
             visible_nodes[(node_x, node_y)] = True
+
+        pos_x, pos_y = get_floor_position(st.player_x, st.player_y)
+        q = queue.Queue()
+        q.put((pos_x, pos_y))
+
+        key = True
+        while not q.empty() and key:
+            cur_x, cur_y = q.get()
+            for dx, dy in corners:
+                tile_x = cur_x + dx
+                tile_y = cur_y + dy
+                if (tile_x < 0 or tile_x >= len(st.map_data[0]) or tile_y < 0 or tile_y >= len(st.map_data)):
+                    continue
+                if check_ray_is_cross_wall(st.player_x, st.player_y, node_x, node_y, tile_x, tile_y):
+                    if st.map_data[tile_y][tile_x] == 1:
+                        visible_nodes[(node_x, node_y)] = False
+                        key = False
+                        break
+                    else:
+                        for i,j in corners:
+                            if 0 <= tile_x + i < len(st.map_data[0]) and 0 <= tile_y + j < len(st.map_data):
+                                q.put((tile_x + i, tile_y + j))
 
 
 def check_node_valid(node_x, node_y):
