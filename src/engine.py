@@ -26,12 +26,10 @@ def player_move(direction):
 
 
 def limit_player_position(pre_x, pre_y):
+    # 地图边界检查（使用实际地图尺寸，不使用SCALE）
+    map_width = len(st.map_data[0]) * st.TILE_SIZE
+    map_height = len(st.map_data) * st.TILE_SIZE
 
-    map_width = len(st.map_data[0]) * st.TILE_SIZE * conf.SCALE
-    map_height = len(st.map_data) * st.TILE_SIZE * conf.SCALE
-
-    # player_screen_y = conf.BASED_POS[1] + st.player_y * conf.SCALE
-    # 屏幕上画出来的玩家已经是缩放的，所以player_y * conf.SCALE 已经是屏幕上的坐标了
     if st.player_x < 0:
         st.player_x = 0
     elif st.player_x >= map_width:
@@ -42,32 +40,47 @@ def limit_player_position(pre_x, pre_y):
     elif st.player_y >= map_height:
         st.player_y = map_height - 1
 
-    player_pos = get_floor_position(st.player_x, st.player_y)
-    if st.map_data[player_pos[1]][player_pos[0]] == 1:
-        border = get_tile_border(player_pos[0], player_pos[1])
-        per_pos = get_floor_position(pre_x, pre_y)
-        if per_pos[0] != player_pos[0] and per_pos[1] != player_pos[1]:
-            if player_pos[0] + 1 == per_pos[0] and player_pos[1] + 1 == per_pos[1]: # 右下
-                st.player_x = border[1] + 1
-            elif player_pos[0] + 1 == per_pos[0] and player_pos[1] - 1 == per_pos[1]: # 左下
-                st.player_x = border[1] + 1
-            elif player_pos[0] - 1 == per_pos[0] and player_pos[1] + 1 == per_pos[1]: # 左上
-                st.player_x = border[3] - 1
-            elif player_pos[0] - 1 == per_pos[0] and player_pos[1] - 1 == per_pos[1]: # 右上
-                st.player_x = border[3] - 1
-        else:
-            if per_pos[0] != player_pos[0]:
-                if per_pos[0] == player_pos[0] + 1:
-                    st.player_x = border[1] + 1
-                elif per_pos[0] == player_pos[0] - 1:
-                    st.player_x = border[3] - 1
-            if per_pos[1] != player_pos[1]:
-                if per_pos[1] == player_pos[1] + 1:
-                    st.player_y = border[2] + 1
-                elif per_pos[1] == player_pos[1] - 1:
-                    st.player_y = border[0] - 1
+    # 获取当前玩家所在瓦片位置
+    player_tile_x, player_tile_y = get_floor_position(st.player_x, st.player_y)
 
+    # 检查是否撞墙
+    if (0 <= player_tile_y < len(st.map_data) and
+            0 <= player_tile_x < len(st.map_data[0]) and
+            st.map_data[player_tile_y][player_tile_x] == 1):
 
+        # 获取墙体边界
+        top, right, bottom, left = get_tile_border(player_tile_x, player_tile_y)
+
+        # 获取之前位置的瓦片坐标
+        prev_tile_x, prev_tile_y = get_floor_position(pre_x, pre_y)
+
+        # 根据移动方向进行碰撞响应
+        if prev_tile_x != player_tile_x:
+            # 水平方向移动导致碰撞
+            if prev_tile_x < player_tile_x:
+                # 从左向右移动进入墙体，将玩家推回左侧
+                st.player_x = left - 0.1
+            else:
+                # 从右向左移动进入墙体，将玩家推回右侧
+                st.player_x = right + 0.1
+
+        if prev_tile_y != player_tile_y:
+            # 垂直方向移动导致碰撞
+            if prev_tile_y < player_tile_y:
+                # 从上向下移动进入墙体，将玩家推回上侧
+                st.player_y = top - 0.1
+            else:
+                # 从下向上移动进入墙体，将玩家推回下侧
+                st.player_y = bottom + 0.1
+
+        # 二次检查：确保修正后的位置不在墙内
+        final_tile_x, final_tile_y = get_floor_position(st.player_x, st.player_y)
+        if (0 <= final_tile_y < len(st.map_data) and
+                0 <= final_tile_x < len(st.map_data[0]) and
+                st.map_data[final_tile_y][final_tile_x] == 1):
+            # 如果仍然在墙内，回滚到之前位置
+            st.player_x = pre_x
+            st.player_y = pre_y
 
 
 

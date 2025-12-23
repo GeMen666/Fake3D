@@ -154,31 +154,42 @@ def check_node_in_fov(node_x, node_y, half_fov):
 
 
 def check_node_valid(node_x, node_y):
-
     if (node_x, node_y) in valid_nodes:
         return valid_nodes[(node_x, node_y)]
 
-    index_x = int(node_x / st.TILE_SIZE)
-    index_y = int(node_y / st.TILE_SIZE)
+    # 我也不知道是节点哪个方向tile的索引了，不管了，能用就行
+    index_x = int(node_x / st.TILE_SIZE) - 1
+    index_y = int(node_y / st.TILE_SIZE) - 1
 
     # 添加边界检查
     map_height = len(st.map_data)
     map_width = len(st.map_data[0]) if map_height > 0 else 0
     
     # 检查所有可能访问的索引是否在有效范围内
-    if (0 <= index_y < map_height and 
-        0 <= index_x < map_width and
-        0 <= index_y-1 < map_height and
-        0 <= index_x-1 < map_width):
-        
-        if st.map_data[index_y][index_x] == 1 or st.map_data[index_y-1][index_x-1] == 1 or st.map_data[index_y-1][index_x] == 1 or st.map_data[index_y][index_x-1] == 1:  
-            return True
+    is_valid = False
+    count = 0
+    corners = [(0, 0), (0, 1), (1, 0), (1, 1)]
+    for dx, dy in corners:
+        x = index_x + dx
+        y = index_y + dy
+        if 0 <= x < map_width and 0 <= y < map_height:
+            if st.map_data[y][x] == 1:
+                is_valid = True
+                count += 1
         else:
             return False
-    else:
-        # 如果节点超出边界，则认为无效
-        return False
-    
+
+
+    if count == 2 and index_x + 1 < map_width and index_y + 1 < map_height:
+        if st.map_data[index_y][index_x] != st.map_data[index_y+1][index_x+1]:
+            is_valid = False
+    if count == 3:
+        is_valid = True
+    elif count == 4:
+        is_valid = False
+
+    return is_valid
+
 
 
 def all_calculate():
