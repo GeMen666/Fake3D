@@ -15,7 +15,7 @@ q = queue.Queue()
 
 def select_forward_tile():
     global q
-    player_pos = get_floor_position()  # (col, row)
+    player_pos = get_floor_position(st.player_x, st.player_y)  # (col, row)
 
     q.put((player_pos[1],player_pos[0]))
     st.processing_grid[player_pos[1]][player_pos[0]] = True
