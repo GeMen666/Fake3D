@@ -16,6 +16,10 @@ q = queue.Queue()
 def select_forward_tile():
     global q
     player_pos = get_floor_position()  # (col, row)
+
+    q.put((player_pos[1],player_pos[0]))
+    st.processing_grid[player_pos[1]][player_pos[0]] = True
+
     view_angle = st.view_angle
     col_max = len(st.map_data[0]) - 1
     row_max = len(st.map_data) - 1
@@ -84,16 +88,13 @@ def check_current_tile(tile_pos):
     for node_x, node_y in tile_nodes:
         if (node_x, node_y) not in st.nodes:
             st.nodes.append((node_x, node_y))
-        
-        # 计算相对位置
+
         delta_x = node_x - st.player_x
         delta_y = node_y - st.player_y
         
         # 计算节点相对于玩家的角度（基于屏幕坐标系）0°向右，90°向下，180°向左，270°向上
         node_angle = math.atan2(delta_y, delta_x)    # 使用atan2计算，返回-pi到pi的范围
-        
         view_angle_rad = math.radians(st.view_angle)
-        
         angle_diff = node_angle - view_angle_rad
         
         # 将角度差标准化到-pi到pi范围内
@@ -113,9 +114,9 @@ def check_current_tile(tile_pos):
 
     if has_valid_node:
         st.processing_grid[row][col] = True
-    else:
-        for node_x, node_y in tile_nodes:
-            del st.valid_nodes[(node_x, node_y)]
+    # else:
+    #     for node_x, node_y in tile_nodes:
+    #         del st.valid_nodes[(node_x, node_y)]
         
     return has_valid_node
 

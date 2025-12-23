@@ -42,5 +42,7 @@ processing_grid = [
     [False for _ in range(len(map_data[0]))]
     for _ in range(len(map_data))
 ]
+
 nodes = []          # 所有节点列表（像素坐标）
+
 valid_nodes = {}    # 节点是否在视野内：{(x,y): True/False} （像素坐标）
