@@ -33,7 +33,7 @@ MOVE_STEP = 1
 # 玩家状态
 player_x = 96.0
 player_y = 96.0
-player_speed = 1
+player_speed = 2
 view_angle = 0.0
 
 

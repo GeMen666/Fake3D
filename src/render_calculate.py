@@ -18,7 +18,7 @@ processing_grid = [
 
 tile_q = queue.Queue()      # 待处理的格子队列（行，列）
 
-nodes = []          # 视线方向所有节点列表（像素坐标）
+nodes = set()         # 视线方向所有节点列表（像素坐标）
 
 in_fov_nodes = {}       # 节点是否在视野范围内：{(x,y): True/False} （像素坐标）
 
@@ -30,21 +30,18 @@ fov_ray_q = []      # 视野射线 [((),()),(()()),(()())]
 
 wall_line = []      # 可以看见的墙体线段 [((),()),(()()),(()())]
 
-across_tiles = set()  # 所有跨立的格子
-points = set()
 
-
-def select_wall_line():
-    global wall_line
-    for row in range(len(processing_grid)):
-        for col in range(len(processing_grid[0])):
-            if processing_grid[row][col] and st.map_data[row][col] == 1:
-                tile_nodes =  get_tile_nodes(row,col)   # 节点顺序：上左0、上右1、下右2、下左3
-                tile_borders = get_tile_border(row,col)  # 边界顺序：上边界0、右边界1、下边界2、左边界3
-                count = 0
-                for node in tile_nodes:
-                    if node in visible_nodes:
-                        count += 1
+# def select_wall_line():
+#     global wall_line
+#     for row in range(len(processing_grid)):
+#         for col in range(len(processing_grid[0])):
+#             if processing_grid[row][col] and st.map_data[row][col] == 1:
+#                 tile_nodes =  get_tile_nodes(row,col)   # 节点顺序：上左0、上右1、下右2、下左3
+#                 tile_borders = get_tile_border(row,col)  # 边界顺序：上边界0、右边界1、下边界2、左边界3
+#                 count = 0
+#                 for node in tile_nodes:
+#                     if node in visible_nodes:
+#                         count += 1
 
 def select_forward_tile():
     global tile_q
@@ -80,8 +77,7 @@ def reset_grids():
     in_fov_nodes.clear()
     visible_nodes.clear()
     valid_nodes.clear()
-    across_tiles.clear()
-    points.clear()
+
     
     for i in range(len(processing_grid)):
         for j in range(len(processing_grid[0])):
@@ -125,7 +121,7 @@ def check_current_tile(tile_pos):
     for node_x, node_y in tile_nodes:
 
         if (node_x, node_y) not in nodes:
-            nodes.append((node_x, node_y))
+            nodes.add((node_x, node_y))
 
         # 检查节点是否在视野范围内
         if check_node_in_fov(node_x, node_y, half_fov):
@@ -173,9 +169,8 @@ def check_node_in_fov(node_x, node_y, half_fov):
 
     return in_fov
 
-
 def check_nodes_is_visible():
-    global visible_nodes, valid_nodes, nx, ny, across_tiles_x, across_tiles_y, points
+    global visible_nodes, valid_nodes
 
     for node_x, node_y in valid_nodes:
         if not valid_nodes[(node_x, node_y)]:
@@ -200,8 +195,6 @@ def check_nodes_is_visible():
             if st.map_data[index_y][index_x] == 1 or st.map_data[index_y][index_x-1] == 1:
                 visible_nodes[(node_x, node_y)] = False
                 break
-            tiles.add((index_x, index_y))
-            tiles.add((index_x - 1, index_y))
         
 
         if not visible_nodes[(node_x, node_y)]:
@@ -223,12 +216,6 @@ def check_nodes_is_visible():
             if st.map_data[index_y][index_x] == 1 or st.map_data[index_y-1][index_x] == 1:
                 visible_nodes[(node_x, node_y)] = False
                 break
-            tiles.add((index_x, index_y))
-            tiles.add((index_x, index_y - 1))
-
-        across_tiles.update(tiles)
-            
-
 
 def check_node_valid(node_x, node_y):
     if (node_x, node_y) in valid_nodes:
@@ -267,8 +254,6 @@ def check_node_valid(node_x, node_y):
 
 
     return is_valid
-
-
 
 def all_calculate():
     reset_grids()
