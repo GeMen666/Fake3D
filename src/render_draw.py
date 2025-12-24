@@ -4,7 +4,7 @@ import pygame
 import math
 import status as st
 import config as conf
-from render_calculate import in_fov_nodes, processing_grid, nodes, visible_nodes, valid_nodes
+from render_calculate import in_fov_nodes, processing_grid, nodes, visible_nodes, valid_nodes, X, Y, across_tiles_x, across_tiles_y, points
 
 def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_length):
     angle_rad = math.radians(angle)
@@ -13,6 +13,25 @@ def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_len
     pygame.draw.line(screen, (255, 0, 0), (player_screen_x, player_screen_y), (x, y), 1)
 
 def draw_map(screen):
+
+    for across_tile in across_tiles_x:
+        screen_x = conf.BASED_POS[0] + across_tile[0] * st.TILE_SIZE * conf.SCALE
+        screen_y = conf.BASED_POS[1] + across_tile[1] * st.TILE_SIZE * conf.SCALE
+        rect = pygame.Rect(screen_x, screen_y, st.TILE_SIZE * conf.SCALE, st.TILE_SIZE * conf.SCALE)
+        pygame.draw.rect(screen, (255, 255, 255), rect)
+        
+    for across_tile in across_tiles_y:
+        screen_x = conf.BASED_POS[0] + across_tile[0] * st.TILE_SIZE * conf.SCALE
+        screen_y = conf.BASED_POS[1] + across_tile[1] * st.TILE_SIZE * conf.SCALE
+        rect = pygame.Rect(screen_x, screen_y, st.TILE_SIZE * conf.SCALE, st.TILE_SIZE * conf.SCALE)
+        pygame.draw.rect(screen, (255, 255, 255), rect)
+    
+    for point in points:
+        screen_x = conf.BASED_POS[0] + point[0] * conf.SCALE
+        screen_y = conf.BASED_POS[1] + point[1] * conf.SCALE
+        pygame.draw.circle(screen, (0, 255, 0), (screen_x, screen_y), 3)
+    
+
     # 绘制瓦片
     for row in range(len(st.map_data)):
         for col in range(len(st.map_data[0])):
@@ -21,10 +40,10 @@ def draw_map(screen):
             rect = pygame.Rect(screen_x, screen_y, st.TILE_SIZE * conf.SCALE, st.TILE_SIZE * conf.SCALE)
             # 颜色逻辑
             if st.map_data[row][col] == 1:  # 墙体
-                color = (200, 200, 200) if processing_grid[row][col] else (100, 100, 100)
+                color = (255, 255, 255) if processing_grid[row][col] else (100, 100, 100)
             else:  # 空地
-                color = (160, 160, 160) if processing_grid[row][col] else (0, 0, 0)
-            pygame.draw.rect(screen, color, rect)
+                color = (100, 100, 100) if processing_grid[row][col] else (100, 100, 100)
+            pygame.draw.rect(screen, color, rect, 1)
 
     # 绘制玩家
     player_screen_x = conf.BASED_POS[0] + st.player_x * conf.SCALE
@@ -45,20 +64,29 @@ def draw_map(screen):
     draw_fov_boundaries(screen, player_screen_x, player_screen_y, left_angle, dir_length)
     draw_fov_boundaries(screen, player_screen_x, player_screen_y, right_angle, dir_length)
 
+
     # 绘制节点
-    for node in nodes:
-        if in_fov_nodes[node]:
-            if node in visible_nodes and visible_nodes[node]:
-                node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
-                node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
-                pygame.draw.line(screen, (0, 0, 255), (player_screen_x, player_screen_y), (node_screen_x, node_screen_y), 1)
-                color = (0, 255, 0)     # 绿色
-            else:
-                color = (255, 255, 0)   # 黄色
-        else:
-            color = (255, 0, 0)         # 红色
+    # for node in nodes:
+    #     if in_fov_nodes[node]:
+    #         if node in visible_nodes and visible_nodes[node]:
+    #             node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
+    #             node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
+    #             pygame.draw.line(screen, (0, 0, 255), (player_screen_x, player_screen_y), (node_screen_x, node_screen_y), 1)
+    #             color = (0, 255, 0)     # 绿色
+    #         else:
+    #             color = (255, 255, 0)   # 黄色
+    #     else:
+    #         color = (255, 0, 0)         # 红色
         
-        node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
-        node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
-        pygame.draw.circle(screen, color, (node_screen_x, node_screen_y), 2)
+    #     node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
+    #     node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
+    #     pygame.draw.circle(screen, color, (node_screen_x, node_screen_y), 2)
+
+    from render_calculate import nx, ny
+    node_screen_x = conf.BASED_POS[0] + nx * conf.SCALE
+    node_screen_y = conf.BASED_POS[1] + ny * conf.SCALE
+    pygame.draw.circle(screen, (0, 255, 0), (node_screen_x, node_screen_y), 2)
+    pygame.draw.line(screen, (0, 0, 255), (player_screen_x, player_screen_y), (node_screen_x, node_screen_y), 1)
+
+    
 

@@ -4,7 +4,7 @@ WINDOW_WIDTH = 1024    # 窗口宽度
 
 WINDOW_HEIGHT = 576    # 窗口高度
 
-FPS = 200       # 目标帧率
+FPS = 144       # 目标帧率
 
 MOUSE_SENSITIVITY = 0.1  # 鼠标灵敏度（越小越慢，越大越快）
 
