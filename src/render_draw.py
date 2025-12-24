@@ -4,7 +4,7 @@ import pygame
 import math
 import status as st
 import config as conf
-from render_calculate import in_fov_nodes, processing_grid, nodes, visible_nodes, valid_nodes, X, Y, across_tiles_x, across_tiles_y, points
+from render_calculate import processing_grid, nodes, visible_nodes, valid_nodes, across_tiles, points
 
 def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_length):
     angle_rad = math.radians(angle)
@@ -14,13 +14,7 @@ def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_len
 
 def draw_map(screen):
 
-    for across_tile in across_tiles_x:
-        screen_x = conf.BASED_POS[0] + across_tile[0] * st.TILE_SIZE * conf.SCALE
-        screen_y = conf.BASED_POS[1] + across_tile[1] * st.TILE_SIZE * conf.SCALE
-        rect = pygame.Rect(screen_x, screen_y, st.TILE_SIZE * conf.SCALE, st.TILE_SIZE * conf.SCALE)
-        pygame.draw.rect(screen, (255, 255, 255), rect)
-        
-    for across_tile in across_tiles_y:
+    for across_tile in across_tiles:
         screen_x = conf.BASED_POS[0] + across_tile[0] * st.TILE_SIZE * conf.SCALE
         screen_y = conf.BASED_POS[1] + across_tile[1] * st.TILE_SIZE * conf.SCALE
         rect = pygame.Rect(screen_x, screen_y, st.TILE_SIZE * conf.SCALE, st.TILE_SIZE * conf.SCALE)
@@ -66,27 +60,21 @@ def draw_map(screen):
 
 
     # 绘制节点
-    # for node in nodes:
-    #     if in_fov_nodes[node]:
-    #         if node in visible_nodes and visible_nodes[node]:
-    #             node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
-    #             node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
-    #             pygame.draw.line(screen, (0, 0, 255), (player_screen_x, player_screen_y), (node_screen_x, node_screen_y), 1)
-    #             color = (0, 255, 0)     # 绿色
-    #         else:
-    #             color = (255, 255, 0)   # 黄色
-    #     else:
-    #         color = (255, 0, 0)         # 红色
+    for node in nodes:
+        if valid_nodes[node]:
+            if node in visible_nodes and visible_nodes[node]:
+                node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
+                node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
+                pygame.draw.line(screen, (0, 0, 255), (player_screen_x, player_screen_y), (node_screen_x, node_screen_y), 1)
+                color = (0, 255, 0)     # 绿色
+            else:
+                color = (255, 255, 0)   # 黄色
+        else:
+            color = (255, 0, 0)         # 红色
         
-    #     node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
-    #     node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
-    #     pygame.draw.circle(screen, color, (node_screen_x, node_screen_y), 2)
-
-    from render_calculate import nx, ny
-    node_screen_x = conf.BASED_POS[0] + nx * conf.SCALE
-    node_screen_y = conf.BASED_POS[1] + ny * conf.SCALE
-    pygame.draw.circle(screen, (0, 255, 0), (node_screen_x, node_screen_y), 2)
-    pygame.draw.line(screen, (0, 0, 255), (player_screen_x, player_screen_y), (node_screen_x, node_screen_y), 1)
+        # node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
+        # node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
+        # pygame.draw.circle(screen, color, (node_screen_x, node_screen_y), 2)
 
     
 

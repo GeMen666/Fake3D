@@ -30,12 +30,7 @@ fov_ray_q = []      # 视野射线 [((),()),(()()),(()())]
 
 wall_line = []      # 可以看见的墙体线段 [((),()),(()()),(()())]
 
-X = set()  # 改为集合
-Y = set()  # 改为集合
-nx = 0
-ny = 0
-across_tiles_x = set()  # 所有跨立的格子
-across_tiles_y = set()  # 所有跨立的格子
+across_tiles = set()  # 所有跨立的格子
 points = set()  # 所有交点
 
 
@@ -86,10 +81,8 @@ def reset_grids():
     visible_nodes.clear()
     valid_nodes.clear()
     points.clear()
-    X.clear()
-    Y.clear()
-    across_tiles_x.clear()
-    across_tiles_y.clear()
+    across_tiles.clear()
+
     for i in range(len(processing_grid)):
         for j in range(len(processing_grid[0])):
             processing_grid[i][j] = False
@@ -184,73 +177,55 @@ def check_node_in_fov(node_x, node_y, half_fov):
 def check_nodes_is_visible():
     global visible_nodes, valid_nodes, nx, ny, across_tiles_x, across_tiles_y, points
 
-    # def check_across_tile(start_x, start_y):
-    
-
-    key = False
     for node_x, node_y in valid_nodes:
         if not valid_nodes[(node_x, node_y)]:
             continue
-        nx = node_x
-        ny = node_y
-        key = True
         
         visible_nodes[(node_x, node_y)] = True
 
-        # 不管怎么样，cur_x 是靠左的
         if node_x > st.player_x:
-            start_x = st.player_x
-            start_y = st.player_y
-            end_x = node_x
-            end_y = node_y
+            start_x, start_y = st.player_x, st.player_y
+            end_x, end_y = node_x, node_y
         else:
-            start_x = node_x
-            start_y = node_y
-            end_x = st.player_x
-            end_y = st.player_y
+            start_x, start_y = node_x, node_y
+            end_x, end_y = st.player_x, st.player_y
         cur_x = math.floor(start_x / st.TILE_SIZE) * st.TILE_SIZE
         while True:
             cur_x = cur_x + st.TILE_SIZE
-            if cur_x >= end_x:
-                break
+            if cur_x >= end_x: break
             rate = (start_y - end_y) / (start_x - end_x)
             cur_y = (cur_x - start_x) * rate + start_y
             index_x, index_y = get_floor_position(cur_x, cur_y)
-            across_tiles_x.add((index_x, index_y))
-            across_tiles_x.add((index_x - 1, index_y))
+            if st.map_data[index_y][index_x] == 1 or st.map_data[index_y][index_x-1] == 1:
+                visible_nodes[(node_x, node_y)] = False
+                break
+            across_tiles.add((index_x, index_y))
+            across_tiles.add((index_x - 1, index_y))
             points.add((cur_x, cur_y))
         
+        if not visible_nodes[(node_x, node_y)]:
+            continue
 
-
-        # 不管怎么样，cur_y 是靠上的
         if node_y > st.player_y:
-            start_y = st.player_y
-            start_x = st.player_x
-            end_y = node_y
-            end_x = node_x
+            start_y, start_x = st.player_y, st.player_x
+            end_y, end_x = node_y, node_x
         else:
-            start_y = node_y
-            start_x = node_x
-            end_x = st.player_x
-            end_y = st.player_y
+            start_y, start_x = node_y, node_x
+            end_y, end_x = st.player_y, st.player_x
         cur_y = math.floor(start_y / st.TILE_SIZE) * st.TILE_SIZE
         while True:
             cur_y = cur_y + st.TILE_SIZE
-            if cur_y >= end_y:
-                break
+            if cur_y >= end_y: break
             rate = (start_x - end_x) / (start_y - end_y)
             cur_x = (cur_y - start_y) * rate + start_x
             index_x, index_y = get_floor_position(cur_x, cur_y)
-            across_tiles_y.add((index_x, index_y))
-            across_tiles_y.add((index_x, index_y - 1))
+            if st.map_data[index_y][index_x] == 1 or st.map_data[index_y-1][index_x] == 1:
+                visible_nodes[(node_x, node_y)] = False
+                break
+            across_tiles.add((index_x, index_y))
+            across_tiles.add((index_x, index_y - 1))
             points.add((cur_x, cur_y))
-
-
-        if key:
-            break
             
-            
-
 
 
 def check_node_valid(node_x, node_y):
