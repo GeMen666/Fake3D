@@ -31,7 +31,7 @@ fov_ray_q = []      # 视野射线 [((),()),(()()),(()())]
 wall_line = []      # 可以看见的墙体线段 [((),()),(()()),(()())]
 
 across_tiles = set()  # 所有跨立的格子
-points = set()  # 所有交点
+points = set()
 
 
 def select_wall_line():
@@ -80,9 +80,9 @@ def reset_grids():
     in_fov_nodes.clear()
     visible_nodes.clear()
     valid_nodes.clear()
-    points.clear()
     across_tiles.clear()
-
+    points.clear()
+    
     for i in range(len(processing_grid)):
         for j in range(len(processing_grid[0])):
             processing_grid[i][j] = False
@@ -190,6 +190,7 @@ def check_nodes_is_visible():
             start_x, start_y = node_x, node_y
             end_x, end_y = st.player_x, st.player_y
         cur_x = math.floor(start_x / st.TILE_SIZE) * st.TILE_SIZE
+        tiles = set()
         while True:
             cur_x = cur_x + st.TILE_SIZE
             if cur_x >= end_x: break
@@ -199,10 +200,10 @@ def check_nodes_is_visible():
             if st.map_data[index_y][index_x] == 1 or st.map_data[index_y][index_x-1] == 1:
                 visible_nodes[(node_x, node_y)] = False
                 break
-            across_tiles.add((index_x, index_y))
-            across_tiles.add((index_x - 1, index_y))
-            points.add((cur_x, cur_y))
+            tiles.add((index_x, index_y))
+            tiles.add((index_x - 1, index_y))
         
+
         if not visible_nodes[(node_x, node_y)]:
             continue
 
@@ -222,9 +223,10 @@ def check_nodes_is_visible():
             if st.map_data[index_y][index_x] == 1 or st.map_data[index_y-1][index_x] == 1:
                 visible_nodes[(node_x, node_y)] = False
                 break
-            across_tiles.add((index_x, index_y))
-            across_tiles.add((index_x, index_y - 1))
-            points.add((cur_x, cur_y))
+            tiles.add((index_x, index_y))
+            tiles.add((index_x, index_y - 1))
+
+        across_tiles.update(tiles)
             
 
 

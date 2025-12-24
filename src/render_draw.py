@@ -19,11 +19,11 @@ def draw_map(screen):
         screen_y = conf.BASED_POS[1] + across_tile[1] * st.TILE_SIZE * conf.SCALE
         rect = pygame.Rect(screen_x, screen_y, st.TILE_SIZE * conf.SCALE, st.TILE_SIZE * conf.SCALE)
         pygame.draw.rect(screen, (255, 255, 255), rect)
-    
+
     for point in points:
-        screen_x = conf.BASED_POS[0] + point[0] * conf.SCALE
-        screen_y = conf.BASED_POS[1] + point[1] * conf.SCALE
-        pygame.draw.circle(screen, (0, 255, 0), (screen_x, screen_y), 3)
+            screen_x = conf.BASED_POS[0] + point[0] * conf.SCALE
+            screen_y = conf.BASED_POS[1] + point[1] * conf.SCALE
+            pygame.draw.circle(screen, (255, 0, 0), (screen_x, screen_y), 3)
     
 
     # 绘制瓦片
@@ -34,10 +34,11 @@ def draw_map(screen):
             rect = pygame.Rect(screen_x, screen_y, st.TILE_SIZE * conf.SCALE, st.TILE_SIZE * conf.SCALE)
             # 颜色逻辑
             if st.map_data[row][col] == 1:  # 墙体
-                color = (255, 255, 255) if processing_grid[row][col] else (100, 100, 100)
+                color = (255, 0, 255) if processing_grid[row][col] else (255, 0, 255)
+                pygame.draw.rect(screen, color, rect)
             else:  # 空地
                 color = (100, 100, 100) if processing_grid[row][col] else (100, 100, 100)
-            pygame.draw.rect(screen, color, rect, 1)
+                pygame.draw.rect(screen, color, rect, 1)
 
     # 绘制玩家
     player_screen_x = conf.BASED_POS[0] + st.player_x * conf.SCALE
