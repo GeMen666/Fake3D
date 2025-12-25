@@ -3,18 +3,13 @@ import math
 import status as st
 from utils import *
 import config as conf
-import os
-
-
 
 
 # 可见的格子队列
-processing_grid = [
+visible_grid = [
     [False for _ in range(len(st.map_data[0]))]
     for _ in range(len(st.map_data))
 ]
-
-tile_q = queue.Queue()      # bfs待处理的格子队列（行，列）
 
 nodes = set()           # 视线方向所有节点列表（像素坐标）
 
@@ -24,11 +19,9 @@ valid_nodes = {}        # 视野范围节点是否有效（是否是墙体节点
 
 visible_nodes = {}      # 节点是否在视野内可见：{(x,y): True/False} （像素坐标）
 
-fov_ray_q = []      # 视野射线 [((),()),(()()),(()())]
-
 wall_line = []      # 可以看见的墙体线段 [((),()),(()()),(()())]
 
-board_node = set()
+
 
 
 def reset_grids():
@@ -36,37 +29,87 @@ def reset_grids():
     in_fov_nodes.clear()
     visible_nodes.clear()
     valid_nodes.clear()
-    for i in range(len(processing_grid)):
-        for j in range(len(processing_grid[0])):
-            processing_grid[i][j] = False
+    for i in range(len(visible_grid)):
+        for j in range(len(visible_grid[0])):
+            visible_grid[i][j] = False
 
-def get_tiles_along_ray(start_x, start_y, angle, max_distance):
+
+def get_intersections_in_single_tile(start_x, start_y, tile_x, tile_y, angle):
+    corss_nodes = set()
+    top, right, botton, left = get_tile_border(tile_x, tile_y)
     angle_radians = math.radians(angle)
-    end_x = start_x + math.cos(angle_radians) * max_distance
-    end_y = start_y + math.sin(angle_radians) * max_distance
-    return get_tiles_along_line(start_x, start_y, end_x, end_y)
+    tan = math.tan(angle_radians)
+    def get_top_botton(target):
+        dy = target - start_y
+        dx = dy / tan
+        if left < start_x + dx < right:
+            corss_nodes.add((start_x + dx, start_y + dy))
+    def get_left_right(target):
+        dx = target - start_x
+        dy = dx * tan
+        if top < start_y + dy < botton:
+            corss_nodes.add((start_x + dx, start_y + dy))
 
-def get_fov_board_node():
-    global board_node
+    get_top_botton(top)
+    get_top_botton(botton)
+    get_left_right(left)
+    get_left_right(right)
+    return corss_nodes
+
+
+def get_all_intersections_along_ray(start_x, start_y, angle):
+    pending_tiles = set()
+    pending_nodes = set()
     max_distance = math.sqrt(len(st.map_data) ** 2 + len(st.map_data[0]) ** 2) * st.TILE_SIZE
-    board_node.update(get_tiles_along_ray(st.player_x, st.player_y, abs(st.view_angle - conf.FOV / 2) % 360, max_distance))
-    board_node.update(get_tiles_along_ray(st.player_x, st.player_y, abs(st.view_angle + conf.FOV / 2) % 360, max_distance))
+    pending_tiles = get_tiles_along_ray(start_x, start_y, angle, max_distance)
+    for tile_x, tile_y in pending_tiles:
+        if check_index_valid(tile_x, tile_y) and st.map_data[tile_y][tile_x] == 1:
+            pending_nodes.update(get_intersections_in_single_tile(start_x, start_y, tile_x, tile_y, angle))
+    return pending_nodes
+
+
+def get_single_ray_intersections(angle):
+    target_node = ()
+    pending_nodes = get_all_intersections_along_ray(st.player_x, st.player_y, angle)
+    min_distance = float('inf')
+    for node_x, node_y in pending_nodes:
+        distance = (node_x - st.player_x) ** 2 + (node_y - st.player_y) ** 2
+        if distance < min_distance:
+            target_node = (node_x, node_y)
+            min_distance = distance
+    return target_node
+
+
+def get_intersections_along_all_ray():
+    global nodes, in_fov_nodes, visible_nodes
+    
+    fov_ray = set()
+    fov_ray.add((st.view_angle - conf.FOV / 2) % 360)
+    fov_ray.add((st.view_angle + conf.FOV / 2) % 360)
+
+    for range in fov_ray:
+        target_node = get_single_ray_intersections(range)
+        nodes.update(target_node)
+        in_fov_nodes[target_node] = True
+        visible_nodes[target_node] = True
 
 
 def bfs_init():
-    global processing_grid
+    global visible_grid
+    tile_q = queue.Queue()
     player_pos = get_floor_position(st.player_x, st.player_y)  # (col, row)
     tile_q.put((player_pos[1],player_pos[0]))
-    processing_grid[player_pos[1]][player_pos[0]] = True
+    visible_grid[player_pos[1]][player_pos[0]] = True
     max_distance = math.sqrt(len(st.map_data) ** 2 + len(st.map_data[0]) ** 2) * st.TILE_SIZE
     tlies = get_tiles_along_ray(st.player_x, st.player_y, st.view_angle, max_distance)
     for tile_x, tile_y in tlies:
         tile_q.put((tile_y, tile_x))
+    return tile_q
 
 
 def bfs_select_tile():
-    global tile_q
-    bfs_init()
+    
+    tile_q = bfs_init()
     visited_grid = [
         [False for _ in range(len(st.map_data[0]))]
         for _ in range(len(st.map_data))
@@ -81,7 +124,7 @@ def bfs_select_tile():
         visited_grid[cur_pos[0]][cur_pos[1]] = True
         is_in_fov = check_current_tile(cur_pos)
         if is_in_fov:
-            processing_grid[cur_pos[0]][cur_pos[1]] = True
+            visible_grid[cur_pos[0]][cur_pos[1]] = True
             tile_q.put((cur_pos[0]+1, cur_pos[1]))
             tile_q.put((cur_pos[0]-1, cur_pos[1]))
             tile_q.put((cur_pos[0], cur_pos[1]+1))
@@ -117,7 +160,7 @@ def check_current_tile(tile_pos):
             valid_nodes[(node_x, node_y)] = False
         
     if tile_in_fov:
-        processing_grid[row][col] = True
+        visible_grid[row][col] = True
 
     return tile_in_fov
 
@@ -166,7 +209,14 @@ def get_tiles_along_line(x1, y1, x2, y2):
         tiles.add((int(cur_x / st.TILE_SIZE), int(cur_y / st.TILE_SIZE)))
         tiles.add((int(cur_x / st.TILE_SIZE), int(cur_y / st.TILE_SIZE) - 1))
     return tiles
-    
+
+
+def get_tiles_along_ray(start_x, start_y, angle, max_distance):
+    angle_radians = math.radians(angle)
+    end_x = start_x + math.cos(angle_radians) * max_distance
+    end_y = start_y + math.sin(angle_radians) * max_distance
+    return get_tiles_along_line(start_x, start_y, end_x, end_y)
+
 
 def check_nodes_is_visible():
     global visible_nodes, valid_nodes
@@ -225,7 +275,9 @@ def check_node_valid(node_x, node_y):
     return is_valid
 
 
+
 def all_calculate():
     reset_grids()
     bfs_select_tile()
     check_nodes_is_visible()
+    get_intersections_along_all_ray()

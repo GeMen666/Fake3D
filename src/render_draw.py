@@ -4,7 +4,7 @@ import pygame
 import math
 import status as st
 import config as conf
-from render_calculate import processing_grid, visible_nodes, in_fov_nodes, board_node
+from render_calculate import visible_grid, visible_nodes, in_fov_nodes
 
 def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_length):
     angle_rad = math.radians(angle)
@@ -24,9 +24,9 @@ def draw_map(screen):
             
             # 瓦片颜色逻辑
             if st.map_data[row][col] == 1:  # 墙体
-                color = (220, 220, 220) if processing_grid[row][col] else (128, 128, 128)
+                color = (220, 220, 220) if visible_grid[row][col] else (128, 128, 128)
             else:  # 空地
-                color = (64, 64, 64) if processing_grid[row][col] else (15, 15, 15)
+                color = (64, 64, 64) if visible_grid[row][col] else (15, 15, 15)
             pygame.draw.rect(screen, color, rect)
 
     # 绘制玩家
@@ -41,12 +41,7 @@ def draw_map(screen):
     end_y = player_screen_y + math.sin(view_angle_rad) * dir_length
     pygame.draw.line(screen, (0, 255, 0), (player_screen_x, player_screen_y), (end_x, end_y), 2)
 
-    # 绘制视野边界线
-    fov = conf.FOV
-    left_angle = st.view_angle - fov / 2
-    right_angle = st.view_angle + fov / 2
-    draw_fov_boundaries(screen, player_screen_x, player_screen_y, left_angle, dir_length)
-    draw_fov_boundaries(screen, player_screen_x, player_screen_y, right_angle, dir_length)
+
 
 
     # 绘制节点
@@ -66,8 +61,11 @@ def draw_map(screen):
         node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
         pygame.draw.circle(screen, color, (node_screen_x, node_screen_y), 2)
 
-    for node in board_node:
-            screen_x = col * st.TILE_SIZE * conf.SCALE + conf.BASED_POS[0]
-            screen_y = row * st.TILE_SIZE * conf.SCALE + conf.BASED_POS[1]
-            rect = pygame.Rect(int(screen_x), int(screen_y), int(st.TILE_SIZE * conf.SCALE) + 1, int(st.TILE_SIZE * conf.SCALE) + 1)
-            pygame.draw.rect(screen, (0, 0, 0), rect)
+    # 绘制视野边界线
+    fov = conf.FOV
+    left_angle = st.view_angle - fov / 2
+    right_angle = st.view_angle + fov / 2
+    draw_fov_boundaries(screen, player_screen_x, player_screen_y, left_angle, dir_length)
+    draw_fov_boundaries(screen, player_screen_x, player_screen_y, right_angle, dir_length)
+
+
