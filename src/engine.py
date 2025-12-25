@@ -1,7 +1,7 @@
 # engine 游戏计算
 
 import math
-import status as st
+import game_state as st
 import config as conf
 from utils import *
 

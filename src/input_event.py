@@ -1,6 +1,6 @@
 import pygame
 import config
-import status as st
+import game_state as st
 
 
 def paused_control():

@@ -2,9 +2,9 @@
 
 import pygame
 import math
-import status as st
+import game_state as st
 import config as conf
-from render_controller import visible_grid, visible_nodes, in_fov_nodes
+from render_controller import visible_grid, in_fov_nodes, valid_nodes
 
 def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_length):
     angle_rad = math.radians(angle)
@@ -12,8 +12,7 @@ def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_len
     y = player_screen_y + math.sin(angle_rad) * dir_length * 2
     pygame.draw.line(screen, (255, 0, 0), (player_screen_x, player_screen_y), (x, y), 1)
 
-def draw_map(screen):
-
+def draw_small_map(screen):
 
     # 绘制瓦片
     for row in range(len(st.map_data)):
@@ -42,12 +41,10 @@ def draw_map(screen):
     pygame.draw.line(screen, (0, 255, 0), (player_screen_x, player_screen_y), (end_x, end_y), 2)
 
 
-
-
     # 绘制节点
     for node in in_fov_nodes:
         if in_fov_nodes[node]:
-            if node in visible_nodes and visible_nodes[node]:
+            if node in valid_nodes and valid_nodes[node]:
                 node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
                 node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
                 pygame.draw.line(screen, (0, 0, 255), (player_screen_x, player_screen_y), (node_screen_x, node_screen_y), 1)    # 蓝色连接线

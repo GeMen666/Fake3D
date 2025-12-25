@@ -5,8 +5,8 @@ import time
 import config
 from engine import *
 from input_event import *
-from status import *
-from render_draw import draw_map
+from game_state import *
+from render_draw import draw_small_map
 from render_controller import all_calculate
 
 
@@ -43,7 +43,7 @@ while running:
     
     all_calculate()
 
-    draw_map(screen)
+    draw_small_map(screen)
 
     pygame.display.flip()
 

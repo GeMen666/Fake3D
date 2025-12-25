@@ -1,6 +1,6 @@
 # utils 提供一些通用的函数
 
-import status as st
+import game_state as st
 import math
 
 
