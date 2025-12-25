@@ -4,10 +4,11 @@ import game_state as st
 from utils import *
 import config as conf
 from render_calculate import *
-from render_globals import visible_grid, nodes, in_fov_nodes, valid_nodes, wall_line
+from render_globals import visible_grid, nodes, in_fov_nodes, valid_nodes
 
 
 def reset_grids():
+    global visible_grid, nodes, in_fov_nodes, valid_nodes
     nodes.clear()
     in_fov_nodes.clear()
     valid_nodes.clear()
@@ -70,23 +71,46 @@ def check_nodes_is_visible():
                 break
 
 
-def get_intersections_along_all_ray():
-    global nodes, in_fov_nodes
-    
+
+def process_fov_ray_node():
+    global nodes, in_fov_nodes, valid_nodes
     fov_ray = set()
     fov_ray.add((st.view_angle - conf.FOV / 2) % 360)
     fov_ray.add((st.view_angle + conf.FOV / 2) % 360)
 
+    for node_x, node_y in valid_nodes:
+        if not valid_nodes[(node_x, node_y)]:
+            continue
+
+        # 1：左上 2：右上 3：右下 4：左下
+        if   node_x < st.player_x and node_y < st.player_y:
+            direction = 1
+        elif node_x > st.player_x and node_y < st.player_y:
+            direction = 2
+        elif node_x > st.player_x and node_y > st.player_y:
+            direction = 3
+        elif node_x < st.player_x and node_y > st.player_y:
+            direction = 4
+        else:
+            continue
+
+        index_x, index_y = get_direction_tile(node_x, node_y, direction)
+
+        if check_index_valid(index_x, index_y) and st.map_data[index_y][index_x] == 0:
+            dx, dy = node_x - st.player_x, node_y - st.player_y
+            radian = math.atan2(dy, dx)
+            fov_ray.add(math.degrees(radian))
+
     for range in fov_ray:
-        target_node = get_single_ray_intersections(range)
-        nodes.update(target_node)
-        in_fov_nodes[target_node] = True
-        valid_nodes[target_node] = True
-
-
-
+        node = get_single_ray_intersections(range)
+        if not node:
+            continue
+        nodes.update(node)
+        in_fov_nodes[node] = True
+        valid_nodes[node] = True
+        
 def all_calculate():
     reset_grids()
     bfs_select_tile()
     check_nodes_is_visible()
-    get_intersections_along_all_ray()
+    process_fov_ray_node()

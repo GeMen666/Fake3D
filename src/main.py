@@ -37,8 +37,6 @@ while running:
         if st.key_states['right']:
             player_move('d')
 
-    # print(f"({st.paused},{st.mouse_grabbed},{st.mouse_visible},{st.rel_x},{st.view_angle},{st.player_x},{st.player_y})")
-
     screen.fill((0, 0, 0))
     
     all_calculate()

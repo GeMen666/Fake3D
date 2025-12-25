@@ -2,7 +2,7 @@ import math
 import game_state as st
 from utils import *
 import config as conf
-from render_globals import visible_grid,nodes, in_fov_nodes, valid_nodes, wall_line
+from render_globals import visible_grid,nodes, in_fov_nodes, valid_nodes
 
 
 def get_tiles_along_line(x1, y1, x2, y2):
@@ -66,15 +66,15 @@ def get_all_intersections_along_ray(start_x, start_y, angle):
 
 
 def get_single_ray_intersections(angle):
-    target_node = ()
     pending_nodes = get_all_intersections_along_ray(st.player_x, st.player_y, angle)
     min_distance = float('inf')
+    node = ()
     for node_x, node_y in pending_nodes:
         distance = (node_x - st.player_x) ** 2 + (node_y - st.player_y) ** 2
         if distance < min_distance:
-            target_node = (node_x, node_y)
+            node = (node_x, node_y)
             min_distance = distance
-    return target_node
+    return node
 
 
 def check_current_tile(tile_pos):
@@ -139,6 +139,8 @@ def check_node_in_fov(node_x, node_y, half_fov):
 
 
 def check_node_valid(node_x, node_y):
+    if not in_fov_nodes[(node_x, node_y)]:
+        return False
     if (node_x, node_y) in valid_nodes:
         return valid_nodes[(node_x, node_y)]
     

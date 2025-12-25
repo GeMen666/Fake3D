@@ -4,11 +4,6 @@ import game_state as st
 import math
 
 
-def get_ceil_position(x, y):
-    pos_x = math.ceil(x / st.TILE_SIZE)
-    pos_y = math.ceil(y / st.TILE_SIZE)
-    return pos_x, pos_y
-
 # 获取节点的所在格子向下取整（像素坐标 -> 方格引索）
 def get_floor_position(x, y):
     pos_x = math.floor(x / st.TILE_SIZE)
@@ -28,7 +23,6 @@ def get_tile_nodes(x, y):
         nodes.append((node_x, node_y))
     # 节点顺序：上左0、上右1、下右2、下左3
     return nodes
-
 
 
 # 获取格子的边界 （方格引索 -> 像素坐标）
@@ -54,7 +48,7 @@ def get_direction_node(x, y, direction):
         return x * st.TILE_SIZE, (y + 1) * st.TILE_SIZE
     else:
         return -1
-    
+
 
 # 获取像素节点某方向的格子的坐标（节点像素坐标 -> 方格引索） 1：左上 2：右上 3：右下 4：左下
 def get_direction_tile(x, y, direction):
@@ -74,11 +68,12 @@ def get_direction_tile(x, y, direction):
         return x-1, y
     else:
         return -1
-    
+
+
+# 检查坐标是否合法
 def check_index_valid(x, y):
     return 0 <= x < len(st.map_data[0]) and 0 <= y < len(st.map_data)
      
-
 
 def check_line_intersect(a1, a2, b1, b2):
 

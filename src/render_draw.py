@@ -4,7 +4,7 @@ import pygame
 import math
 import game_state as st
 import config as conf
-from render_controller import visible_grid, in_fov_nodes, valid_nodes
+from render_controller import visible_grid, in_fov_nodes, valid_nodes, nodes
 
 def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_length):
     angle_rad = math.radians(angle)
@@ -35,10 +35,10 @@ def draw_small_map(screen):
 
     # 绘制玩家视线
     dir_length = 700 * conf.SCALE
-    view_angle_rad = math.radians(st.view_angle)
-    end_x = player_screen_x + math.cos(view_angle_rad) * dir_length
-    end_y = player_screen_y + math.sin(view_angle_rad) * dir_length
-    pygame.draw.line(screen, (0, 255, 0), (player_screen_x, player_screen_y), (end_x, end_y), 2)
+    # view_angle_rad = math.radians(st.view_angle)
+    # end_x = player_screen_x + math.cos(view_angle_rad) * dir_length
+    # end_y = player_screen_y + math.sin(view_angle_rad) * dir_length
+    # pygame.draw.line(screen, (0, 255, 0), (player_screen_x, player_screen_y), (end_x, end_y), 2)
 
 
     # 绘制节点
