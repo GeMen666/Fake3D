@@ -6,19 +6,17 @@ import config as conf
 import os
 
 
-visited_grid = [
-    [False for _ in range(len(st.map_data[0]))]
-    for _ in range(len(st.map_data))
-]
 
+
+# 可见的格子队列
 processing_grid = [
     [False for _ in range(len(st.map_data[0]))]
     for _ in range(len(st.map_data))
 ]
 
-tile_q = queue.Queue()      # 待处理的格子队列（行，列）
+tile_q = queue.Queue()      # bfs待处理的格子队列（行，列）
 
-nodes = set()         # 视线方向所有节点列表（像素坐标）
+nodes = set()           # 视线方向所有节点列表（像素坐标）
 
 in_fov_nodes = {}       # 节点是否在视野范围内：{(x,y): True/False} （像素坐标）
 
@@ -31,72 +29,58 @@ fov_ray_q = []      # 视野射线 [((),()),(()()),(()())]
 wall_line = []      # 可以看见的墙体线段 [((),()),(()()),(()())]
 
 
-# def select_wall_line():
-#     global wall_line
-#     for row in range(len(processing_grid)):
-#         for col in range(len(processing_grid[0])):
-#             if processing_grid[row][col] and st.map_data[row][col] == 1:
-#                 tile_nodes =  get_tile_nodes(row,col)   # 节点顺序：上左0、上右1、下右2、下左3
-#                 tile_borders = get_tile_border(row,col)  # 边界顺序：上边界0、右边界1、下边界2、左边界3
-#                 count = 0
-#                 for node in tile_nodes:
-#                     if node in visible_nodes:
-#                         count += 1
-
-def select_forward_tile():
-    global tile_q
-    player_pos = get_floor_position(st.player_x, st.player_y)  # (col, row)
-
-    tile_q.put((player_pos[1],player_pos[0]))
-    processing_grid[player_pos[1]][player_pos[0]] = True
-
-    tile_q.put((player_pos[1],player_pos[0]))
 
 
 def reset_grids():
-    global visited_grid
     nodes.clear()
     in_fov_nodes.clear()
     visible_nodes.clear()
     valid_nodes.clear()
-
-    
     for i in range(len(processing_grid)):
         for j in range(len(processing_grid[0])):
             processing_grid[i][j] = False
-            visited_grid[i][j] = False
 
-def bfs_select_tile():
-    global tile_q, visited_grid
 
+def bfs_init():
+    global processing_grid
+    def get_tiles_along_ray(start_x, start_y, angle, max_distance):
+        angle_radians = math.radians(angle)
+        end_x = start_x + math.cos(angle_radians) * max_distance
+        end_y = start_y + math.sin(angle_radians) * max_distance
+        return get_tiles_along_line(start_x, start_y, end_x, end_y)
+    
     player_pos = get_floor_position(st.player_x, st.player_y)  # (col, row)
-
     tile_q.put((player_pos[1],player_pos[0]))
     processing_grid[player_pos[1]][player_pos[0]] = True
+    max_distance = math.sqrt(len(st.map_data) ** 2 + len(st.map_data[0]) ** 2) * st.TILE_SIZE
+    tlies = get_tiles_along_ray(st.player_x, st.player_y, st.view_angle, max_distance)
+    for tile_x, tile_y in tlies:
+        tile_q.put((tile_y, tile_x))
 
-    tile_q.put((player_pos[1],player_pos[0]))
+
+def bfs_select_tile():
+    global tile_q
+    bfs_init()
+    visited_grid = [
+        [False for _ in range(len(st.map_data[0]))]
+        for _ in range(len(st.map_data))
+    ]
 
     while not tile_q.empty():
         cur_pos = tile_q.get()
-        if (cur_pos[0] < 0 or cur_pos[0] >= len(st.map_data) or
-            cur_pos[1] < 0 or cur_pos[1] >= len(st.map_data[0])):
+        if (cur_pos[0] < 0 or cur_pos[0] >= len(st.map_data) or cur_pos[1] < 0 or cur_pos[1] >= len(st.map_data[0])):
             continue
         if visited_grid[cur_pos[0]][cur_pos[1]]:
             continue
-        
-        is_in_fov = check_current_tile(cur_pos)
         visited_grid[cur_pos[0]][cur_pos[1]] = True
-        
+        is_in_fov = check_current_tile(cur_pos)
         if is_in_fov:
             processing_grid[cur_pos[0]][cur_pos[1]] = True
             tile_q.put((cur_pos[0]+1, cur_pos[1]))
             tile_q.put((cur_pos[0]-1, cur_pos[1]))
             tile_q.put((cur_pos[0], cur_pos[1]+1))
             tile_q.put((cur_pos[0], cur_pos[1]-1))
-            # tile_q.put((cur_pos[0]+1, cur_pos[1]-1))
-            # tile_q.put((cur_pos[0]-1, cur_pos[1]+1))
-            # tile_q.put((cur_pos[0]+1, cur_pos[1]+1))
-            # tile_q.put((cur_pos[0]-1, cur_pos[1]-1))
+
 
 def check_current_tile(tile_pos):
     global nodes, in_fov_nodes, valid_nodes
@@ -131,13 +115,6 @@ def check_current_tile(tile_pos):
 
     return tile_in_fov
 
-def check_tile_in_fov(tile_pos):
-    global processing_grid
-    row, col = tile_pos
-    if processing_grid[row][col]:
-        return True
-    return False
-
 
 def check_node_in_fov(node_x, node_y, half_fov):
 
@@ -165,33 +142,24 @@ def check_node_in_fov(node_x, node_y, half_fov):
 
     return in_fov
 
-def check_line_across_target(start_x, start_y, end_x, end_y, target):
 
-    cur_x = math.floor(start_x / st.TILE_SIZE) * st.TILE_SIZE
-    while True:
-        cur_x = cur_x + st.TILE_SIZE
-        if cur_x >= end_x: break
-        rate = (start_y - end_y) / (start_x - end_x)
-        cur_y = (cur_x - start_x) * rate + start_y
-        index_x, index_y = get_floor_position(cur_x, cur_y)
-        for i in target:
-            print(index_x, index_y)
-            if st.map_data[index_y][index_x] == i or st.map_data[index_y][index_x-1] == i:
-                return True
-    cur_y = math.floor(start_y / st.TILE_SIZE) * st.TILE_SIZE
-
-    while True:
-        cur_y = cur_y + st.TILE_SIZE
-        if cur_y >= end_y: break
-        rate = (start_x - end_x) / (start_y - end_y)
-        cur_x = (cur_y - start_y) * rate + start_x
-        index_x, index_y = get_floor_position(cur_x, cur_y)
-        for i in target:
-            if st.map_data[index_y][index_x] == i or st.map_data[index_y-1][index_x] == i:
-                return True
+def get_tiles_along_line(x1, y1, x2, y2):
+    tiles = set()
+    rate = (y2 - y1) / (x2 - x1)
+    correction = 1 if x1 < x2 else -1
+    for cur_x in range(int(x1 / st.TILE_SIZE) * st.TILE_SIZE, int(x2), st.TILE_SIZE * correction):
+        if not (min(x1, x2) < cur_x < max(x1, x2)): continue
+        cur_y = (cur_x - x1) * rate + y1
+        tiles.add((int(cur_x / st.TILE_SIZE), int(cur_y / st.TILE_SIZE)))
+        tiles.add((int(cur_x / st.TILE_SIZE) - 1, int(cur_y / st.TILE_SIZE)))
+    correction = 1 if y1 < y2 else -1
+    for cur_y in range(int(y1 / st.TILE_SIZE) * st.TILE_SIZE, int(y2), st.TILE_SIZE * correction):
+        if not (min(y1, y2) < cur_y < max(y1, y2)): continue
+        cur_x = (cur_y - y1) / rate + x1
+        tiles.add((int(cur_x / st.TILE_SIZE), int(cur_y / st.TILE_SIZE)))
+        tiles.add((int(cur_x / st.TILE_SIZE), int(cur_y / st.TILE_SIZE) - 1))
+    return tiles
     
-    return False
-
 
 def check_nodes_is_visible():
     global visible_nodes, valid_nodes
@@ -201,58 +169,16 @@ def check_nodes_is_visible():
             continue
         
         visible_nodes[(node_x, node_y)] = True
-        if node_x > st.player_x:
-            visible_nodes[(node_x, node_y)] = not check_line_across_target(st.player_x, st.player_y, node_x, node_y, [1])
-        else:
-            visible_nodes[(node_x, node_y)] = not check_line_across_target(node_x, node_y, st.player_x, st.player_y, [1])
 
-        if visible_nodes[(node_x, node_y)]:
-            continue
-
-        if node_y > st.player_y:
-            visible_nodes[(node_x, node_y)] = not check_line_across_target(st.player_y, st.player_x, node_y, node_x, [1])
-        else:
-            visible_nodes[(node_x, node_y)] = not check_line_across_target(node_y, node_x, st.player_y, st.player_x, [1])
-
-
-
-        # if node_x > st.player_x:
-        #     start_x, start_y = st.player_x, st.player_y
-        #     end_x, end_y = node_x, node_y
-        # else:
-        #     start_x, start_y = node_x, node_y
-        #     end_x, end_y = st.player_x, st.player_y
-        # cur_x = math.floor(start_x / st.TILE_SIZE) * st.TILE_SIZE
-        # while True:
-        #     cur_x = cur_x + st.TILE_SIZE
-        #     if cur_x >= end_x: break
-        #     rate = (start_y - end_y) / (start_x - end_x)
-        #     cur_y = (cur_x - start_x) * rate + start_y
-        #     index_x, index_y = get_floor_position(cur_x, cur_y)
-        #     if st.map_data[index_y][index_x] == 1 or st.map_data[index_y][index_x-1] == 1:
-        #         visible_nodes[(node_x, node_y)] = False
-        #         break
+        tiles = get_tiles_along_line(node_x, node_y, st.player_x, st.player_y)
         
+        for tile_x, tile_y in tiles:
+            if tile_x < 0 or tile_x >= len(st.map_data[0]) or tile_y < 0 or tile_y >= len(st.map_data):
+                continue
+            if st.map_data[tile_y][tile_x] == 1:
+                visible_nodes[(node_x, node_y)] = False
+                break
 
-        # if not visible_nodes[(node_x, node_y)]:
-        #     continue
-
-        # if node_y > st.player_y:
-        #     start_y, start_x = st.player_y, st.player_x
-        #     end_y, end_x = node_y, node_x
-        # else:
-        #     start_y, start_x = node_y, node_x
-        #     end_y, end_x = st.player_y, st.player_x
-        # cur_y = math.floor(start_y / st.TILE_SIZE) * st.TILE_SIZE
-        # while True:
-        #     cur_y = cur_y + st.TILE_SIZE
-        #     if cur_y >= end_y: break
-        #     rate = (start_x - end_x) / (start_y - end_y)
-        #     cur_x = (cur_y - start_y) * rate + start_x
-        #     index_x, index_y = get_floor_position(cur_x, cur_y)
-        #     if st.map_data[index_y][index_x] == 1 or st.map_data[index_y-1][index_x] == 1:
-        #         visible_nodes[(node_x, node_y)] = False
-        #         break
 
 def check_node_valid(node_x, node_y):
     if (node_x, node_y) in valid_nodes:
@@ -289,11 +215,10 @@ def check_node_valid(node_x, node_y):
     elif count == 4:
         is_valid = False
 
-
     return is_valid
+
 
 def all_calculate():
     reset_grids()
-    select_forward_tile()
     bfs_select_tile()
     check_nodes_is_visible()

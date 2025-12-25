@@ -4,7 +4,7 @@ import pygame
 import math
 import status as st
 import config as conf
-from render_calculate import processing_grid, nodes, visible_nodes, valid_nodes, in_fov_nodes
+from render_calculate import processing_grid, visible_nodes, in_fov_nodes
 
 def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_length):
     angle_rad = math.radians(angle)
@@ -13,6 +13,7 @@ def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_len
     pygame.draw.line(screen, (255, 0, 0), (player_screen_x, player_screen_y), (x, y), 1)
 
 def draw_map(screen):
+
 
     # 绘制瓦片
     for row in range(len(st.map_data)):
@@ -65,5 +66,8 @@ def draw_map(screen):
         node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
         pygame.draw.circle(screen, color, (node_screen_x, node_screen_y), 2)
 
+    # for node in v_node:
+    #     node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
+    #     node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
+    #     pygame.draw.circle(screen, (255, 0, 255), (node_screen_x, node_screen_y), 3)
     
-
