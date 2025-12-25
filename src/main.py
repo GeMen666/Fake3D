@@ -7,7 +7,7 @@ from engine import *
 from input_event import *
 from status import *
 from render_draw import draw_map
-from render_calculate import all_calculate
+from render_controller import all_calculate
 
 
 pygame.init()

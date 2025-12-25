@@ -4,7 +4,7 @@ import pygame
 import math
 import status as st
 import config as conf
-from render_calculate import visible_grid, visible_nodes, in_fov_nodes
+from render_controller import visible_grid, visible_nodes, in_fov_nodes
 
 def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_length):
     angle_rad = math.radians(angle)
