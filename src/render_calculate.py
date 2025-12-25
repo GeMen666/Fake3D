@@ -28,7 +28,7 @@ fov_ray_q = []      # 视野射线 [((),()),(()()),(()())]
 
 wall_line = []      # 可以看见的墙体线段 [((),()),(()()),(()())]
 
-
+board_node = set()
 
 
 def reset_grids():
@@ -40,15 +40,21 @@ def reset_grids():
         for j in range(len(processing_grid[0])):
             processing_grid[i][j] = False
 
+def get_tiles_along_ray(start_x, start_y, angle, max_distance):
+    angle_radians = math.radians(angle)
+    end_x = start_x + math.cos(angle_radians) * max_distance
+    end_y = start_y + math.sin(angle_radians) * max_distance
+    return get_tiles_along_line(start_x, start_y, end_x, end_y)
+
+def get_fov_board_node():
+    global board_node
+    max_distance = math.sqrt(len(st.map_data) ** 2 + len(st.map_data[0]) ** 2) * st.TILE_SIZE
+    board_node.update(get_tiles_along_ray(st.player_x, st.player_y, abs(st.view_angle - conf.FOV / 2) % 360, max_distance))
+    board_node.update(get_tiles_along_ray(st.player_x, st.player_y, abs(st.view_angle + conf.FOV / 2) % 360, max_distance))
+
 
 def bfs_init():
     global processing_grid
-    def get_tiles_along_ray(start_x, start_y, angle, max_distance):
-        angle_radians = math.radians(angle)
-        end_x = start_x + math.cos(angle_radians) * max_distance
-        end_y = start_y + math.sin(angle_radians) * max_distance
-        return get_tiles_along_line(start_x, start_y, end_x, end_y)
-    
     player_pos = get_floor_position(st.player_x, st.player_y)  # (col, row)
     tile_q.put((player_pos[1],player_pos[0]))
     processing_grid[player_pos[1]][player_pos[0]] = True
@@ -145,6 +151,7 @@ def check_node_in_fov(node_x, node_y, half_fov):
 
 def get_tiles_along_line(x1, y1, x2, y2):
     tiles = set()
+    if x1 == x2 and y1 == y2: return tiles
     rate = (y2 - y1) / (x2 - x1)
     correction = 1 if x1 < x2 else -1
     for cur_x in range(int(x1 / st.TILE_SIZE) * st.TILE_SIZE, int(x2), st.TILE_SIZE * correction):

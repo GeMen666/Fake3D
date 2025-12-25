@@ -74,6 +74,9 @@ def get_direction_tile(x, y, direction):
         return x-1, y
     else:
         return -1
+    
+def check_index_valid(x, y):
+    return 0 <= x < len(st.map_data[0]) and 0 <= y < len(st.map_data)
      
 
 

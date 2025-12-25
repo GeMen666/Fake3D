@@ -1,2 +1,3 @@
-for i in range(5,1,-1):
-    print(f"{i}")
+a = 10 % 2
+
+print(f"{a}")
