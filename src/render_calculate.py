@@ -2,12 +2,12 @@ import math
 import game_state as st
 from utils import *
 import config as conf
-from render_globals import visible_grid,nodes, in_fov_nodes, valid_nodes
+from render_globals import visible_grid,nodes, in_fov_nodes, valid_nodes, wall_line
 
 
 def get_tiles_along_line(x1, y1, x2, y2):
     tiles = set()
-    if x1 == x2 and y1 == y2: return tiles
+    # if x2 - x1 == 0 or y2 - y1 == 0: return tiles
     rate = (y2 - y1) / (x2 - x1)
     correction = 1 if x1 < x2 else -1
     for cur_x in range(int(x1 / st.TILE_SIZE) * st.TILE_SIZE, int(x2), st.TILE_SIZE * correction):
@@ -65,17 +65,23 @@ def get_all_intersections_along_ray(start_x, start_y, angle):
     return pending_nodes
 
 
-def get_single_ray_intersections(angle):
+def get_target_intersections(x, y, angle):
     pending_nodes = get_all_intersections_along_ray(st.player_x, st.player_y, angle)
-    min_distance = float('inf')
-    node = ()
+    if not pending_nodes:
+        return ()
+    if len(pending_nodes) == 1:
+        return list(pending_nodes)[0]
+    nodes_with_distance = []
     for node_x, node_y in pending_nodes:
         distance = (node_x - st.player_x) ** 2 + (node_y - st.player_y) ** 2
-        if distance < min_distance:
-            node = (node_x, node_y)
-            min_distance = distance
-    return node
-
+        nodes_with_distance.append((distance, (node_x, node_y)))
+    nodes_with_distance.sort(key=lambda x: x[0])
+    min_node = nodes_with_distance[0][1]
+    second_min_node = nodes_with_distance[1][1]
+    if abs(min_node[0] - x) < 5 or abs(min_node[1] - y) < 5:
+        return second_min_node
+    else:
+        return min_node
 
 def check_current_tile(tile_pos):
     global nodes, in_fov_nodes, valid_nodes
@@ -175,3 +181,13 @@ def check_node_valid(node_x, node_y):
         is_valid = False
 
     return is_valid
+
+
+
+def process_ray_node(i):
+    global wall_line
+    if i-1 >= 0 and (wall_line[i-1][0] == wall_line[i][0] or wall_line[i-1][1] == wall_line[i][1]):
+        return (1,0)
+    if i+2 < len(wall_line) and (wall_line[i+2][0] == wall_line[i][0] or wall_line[i+2][1] == wall_line[i][1]):
+        return (0,1)
+    return (1,0)

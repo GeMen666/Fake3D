@@ -4,7 +4,7 @@ import pygame
 import math
 import game_state as st
 import config as conf
-from render_controller import visible_grid, in_fov_nodes, valid_nodes, nodes
+from render_controller import visible_grid, in_fov_nodes, valid_nodes, nodes, wall_line
 
 def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_length):
     angle_rad = math.radians(angle)
@@ -13,7 +13,9 @@ def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_len
     pygame.draw.line(screen, (255, 0, 0), (player_screen_x, player_screen_y), (x, y), 1)
 
 def draw_small_map(screen):
-
+    dir_length = 700 * conf.SCALE
+    player_screen_x = conf.BASED_POS[0] + st.player_x * conf.SCALE
+    player_screen_y = conf.BASED_POS[1] + st.player_y * conf.SCALE
     # 绘制瓦片
     for row in range(len(st.map_data)):
         for col in range(len(st.map_data[0])):
@@ -29,12 +31,19 @@ def draw_small_map(screen):
             pygame.draw.rect(screen, color, rect)
 
     # 绘制玩家
-    player_screen_x = conf.BASED_POS[0] + st.player_x * conf.SCALE
-    player_screen_y = conf.BASED_POS[1] + st.player_y * conf.SCALE
     pygame.draw.circle(screen, (255, 255, 255), (player_screen_x, player_screen_y), 3)
 
+
+    # 绘制视野
+    for i in range(len(wall_line)):
+        if i == len(wall_line) - 1:
+            break
+        screen_x1, screen_y1 = conf.BASED_POS[0] + wall_line[i][0] * conf.SCALE, conf.BASED_POS[1] + wall_line[i][1] * conf.SCALE
+        screen_x2, screen_y2 = conf.BASED_POS[0] + wall_line[i+1][0] * conf.SCALE, conf.BASED_POS[1] + wall_line[i+1][1] * conf.SCALE
+        pygame.draw.polygon(screen, (200, 200, 200), [(player_screen_x, player_screen_y), (screen_x1, screen_y1), (screen_x2, screen_y2)])
+
+
     # 绘制玩家视线
-    dir_length = 700 * conf.SCALE
     # view_angle_rad = math.radians(st.view_angle)
     # end_x = player_screen_x + math.cos(view_angle_rad) * dir_length
     # end_y = player_screen_y + math.sin(view_angle_rad) * dir_length
@@ -58,11 +67,17 @@ def draw_small_map(screen):
         node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
         pygame.draw.circle(screen, color, (node_screen_x, node_screen_y), 2)
 
+
     # 绘制视野边界线
     fov = conf.FOV
     left_angle = st.view_angle - fov / 2
     right_angle = st.view_angle + fov / 2
     draw_fov_boundaries(screen, player_screen_x, player_screen_y, left_angle, dir_length)
     draw_fov_boundaries(screen, player_screen_x, player_screen_y, right_angle, dir_length)
+
+    # for node in t_node:
+    #     node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
+    #     node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
+    #     pygame.draw.circle(screen, (255, 0, 255), (node_screen_x, node_screen_y), 2)  # 紫色可见节点
 
 
