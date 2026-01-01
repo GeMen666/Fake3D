@@ -1,3 +1,5 @@
-a = -9 % 2
+a = 2 ** 10
+print(a)
 
-print(f"{a}")
+a = 2 ** 11
+print(a)

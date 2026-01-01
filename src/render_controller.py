@@ -4,6 +4,7 @@ import game_state as st
 from utils import *
 import config as conf
 from render_calculate import *
+import copy
 from render_globals import visible_grid, nodes, in_fov_nodes, valid_nodes, wall_line
 
 
@@ -45,6 +46,7 @@ def bfs_select_tile():
             continue
         if visited_grid[cur_pos[0]][cur_pos[1]]:
             continue
+
         visited_grid[cur_pos[0]][cur_pos[1]] = True
         is_in_fov = check_current_tile(cur_pos)
         if is_in_fov:
@@ -72,15 +74,23 @@ def check_nodes_is_visible():
 
 
 def process_fov_ray_node():
-    global nodes, in_fov_nodes, valid_nodes, t_node
-    cross_node = {}
-    fov_ray = set()
-    fov_ray.add((st.view_angle - conf.FOV / 2) % 360)
-    cross_node[(st.view_angle - conf.FOV / 2) % 360] = (st.player_x, st.player_y)
-    fov_ray.add((st.view_angle + conf.FOV / 2) % 360)
-    cross_node[(st.view_angle + conf.FOV / 2) % 360] = (st.player_x, st.player_y)
+    global nodes, in_fov_nodes, valid_nodes
 
-    for node_x, node_y in valid_nodes:
+
+    def process_node(node_x, node_y, angle):
+        global valid_nodes
+        inter_node = get_target_intersections(node_x, node_y, angle)
+        if inter_node == ():
+            return
+        in_fov_nodes[(inter_node[0], inter_node[1])] = True
+        valid_nodes[(inter_node[0], inter_node[1])] = True
+
+    process_node(st.player_x, st.player_y, st.view_angle - conf.FOV / 2)
+    process_node(st.player_x, st.player_y, st.view_angle + conf.FOV / 2)
+
+
+    valid_nodes_t = copy.deepcopy(valid_nodes)
+    for node_x, node_y in valid_nodes_t:
         if not valid_nodes[(node_x, node_y)]:
             continue
 
@@ -98,41 +108,33 @@ def process_fov_ray_node():
         index_x, index_y = get_direction_tile(node_x, node_y, direction)
 
         if check_index_valid(index_x, index_y) and st.map_data[index_y][index_x] == 0:
-            valid_nodes[(node_x, node_y)] = False
             dx, dy = node_x - st.player_x, node_y - st.player_y
             radian = math.atan2(dy, dx)
-            fov_ray.add(math.degrees(radian))
-            cross_node[math.degrees(radian)] = (node_x, node_y)
+            process_node(node_x, node_y, math.degrees(radian))
             
-    for range in fov_ray:
-        x, y = cross_node[range]
-        node = get_target_intersections(x, y, range)
-        if not node:
-            continue
-        nodes.update(node)
-        in_fov_nodes[node] = True
-        valid_nodes[node] = True
+            
 
 
-def process_wall_valid_node():
-    global wall_line
-    left_fov_line = (st.view_angle - conf.FOV / 2) % 360
-    key = {}
-    for node_x, node_y in valid_nodes:
-        if not valid_nodes[(node_x, node_y)]:
-            continue
-        dx, dy = node_x - st.player_x, node_y - st.player_y
-        radian = math.atan2(dy, dx)
-        angle = (math.degrees(radian) - left_fov_line) % 360
-        distance = math.sqrt(dx ** 2 + dy ** 2)
-        wall_line.append((node_x, node_y, angle, distance))
-        key[(node_x, node_y, angle, distance)] = 1
-    wall_line.sort(key=lambda x:x[2])
-    for i in range(len(wall_line) - 2):
-        if wall_line[i][2] == wall_line[i+1][2]:
-            key[wall_line[i]], key[wall_line[i+1]] = process_ray_node(i)
+
+# def process_wall_valid_node():
+#     global wall_line
+#     left_fov_line = (st.view_angle - conf.FOV / 2) % 360
+#     key = {}
+#     for node_x, node_y in valid_nodes:
+#         if not valid_nodes[(node_x, node_y)]:
+#             continue
+#         dx, dy = node_x - st.player_x, node_y - st.player_y
+#         radian = math.atan2(dy, dx)
+#         angle = (math.degrees(radian) - left_fov_line) % 360
+#         distance = math.sqrt(dx ** 2 + dy ** 2)
+#         wall_line.append((node_x, node_y, angle, distance))
+#         key[(node_x, node_y, angle, distance)] = 1
+#     wall_line.sort(key=lambda x:x[2])
+#     for i in range(len(wall_line) - 2):
+#         if wall_line[i][2] == wall_line[i+1][2]:
+#             key[wall_line[i]], key[wall_line[i+1]] = process_ray_node(i)
     
-    wall_line.sort(key=lambda x:(x[2], -key[x]))
+#     wall_line.sort(key=lambda x:(x[2], -key[x]))
     
     
 

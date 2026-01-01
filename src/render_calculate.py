@@ -66,22 +66,24 @@ def get_all_intersections_along_ray(start_x, start_y, angle):
 
 
 def get_target_intersections(x, y, angle):
-    pending_nodes = get_all_intersections_along_ray(st.player_x, st.player_y, angle)
+    pending_nodes = get_all_intersections_along_ray(x, y, angle)
     if not pending_nodes:
         return ()
     if len(pending_nodes) == 1:
         return list(pending_nodes)[0]
-    nodes_with_distance = []
+    # 返回距离最小的交点
+    min_distance = float('inf')
+    min_node = None
     for node_x, node_y in pending_nodes:
-        distance = (node_x - st.player_x) ** 2 + (node_y - st.player_y) ** 2
-        nodes_with_distance.append((distance, (node_x, node_y)))
-    nodes_with_distance.sort(key=lambda x: x[0])
-    min_node = nodes_with_distance[0][1]
-    second_min_node = nodes_with_distance[1][1]
-    if abs(min_node[0] - x) < 5 or abs(min_node[1] - y) < 5:
-        return second_min_node
-    else:
-        return min_node
+        distance = math.sqrt((node_x - x) ** 2 + (node_y - y) ** 2)
+        if distance < min_distance:
+            min_distance = distance
+            min_node = (node_x, node_y)
+    return min_node
+    
+    
+    
+
 
 def check_current_tile(tile_pos):
     global nodes, in_fov_nodes, valid_nodes

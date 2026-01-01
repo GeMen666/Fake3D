@@ -80,4 +80,6 @@ def draw_small_map(screen):
     #     node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
     #     pygame.draw.circle(screen, (255, 0, 255), (node_screen_x, node_screen_y), 2)  # 紫色可见节点
 
+    
+
 
