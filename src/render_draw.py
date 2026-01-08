@@ -4,7 +4,7 @@ import pygame
 import math
 import game_state as st
 import config as conf
-from render_controller import visible_grid, in_fov_nodes, valid_nodes, visible_line, wall_line
+from render_globals import visible_grid, in_fov_nodes, valid_nodes, visible_line, wall_line
 
 def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_length):
     angle_rad = math.radians(angle)
@@ -34,22 +34,6 @@ def draw_small_map(screen):
     pygame.draw.circle(screen, (255, 255, 255), (player_screen_x, player_screen_y), 3)
 
 
-    # 绘制可见线
-    # for (node_x1, node_y1), (node_x2, node_y2) in visible_line:
-    #     screen_x1, screen_y1 = conf.BASED_POS[0] + node_x1 * conf.SCALE, conf.BASED_POS[1] + node_y1 * conf.SCALE
-    #     screen_x2, screen_y2 = conf.BASED_POS[0] + node_x2 * conf.SCALE, conf.BASED_POS[1] + node_y2 * conf.SCALE
-    #     pygame.draw.line(screen, (0, 255, 0), (screen_x1, screen_y1), (screen_x2, screen_y2), 1)    # 绿色可见线
-
-
-
-    # # 绘制视野
-    # for i in range(len(wall_line)):
-    #     if i == len(wall_line) - 1:
-    #         break
-    #     screen_x1, screen_y1 = conf.BASED_POS[0] + wall_line[i][0] * conf.SCALE, conf.BASED_POS[1] + wall_line[i][1] * conf.SCALE
-    #     screen_x2, screen_y2 = conf.BASED_POS[0] + wall_line[i+1][0] * conf.SCALE, conf.BASED_POS[1] + wall_line[i+1][1] * conf.SCALE
-    #     pygame.draw.polygon(screen, (200, 200, 200), [(player_screen_x, player_screen_y), (screen_x1, screen_y1), (screen_x2, screen_y2)])
-
 
     # 绘制节点
     for node in in_fov_nodes:
@@ -67,10 +51,3 @@ def draw_small_map(screen):
         node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
         pygame.draw.circle(screen, color, (node_screen_x, node_screen_y), 1)
 
-
-    # # 绘制视野边界线
-    # fov = conf.FOV
-    # left_angle = st.view_angle - fov / 2
-    # right_angle = st.view_angle + fov / 2
-    # draw_fov_boundaries(screen, player_screen_x, player_screen_y, left_angle, dir_length)
-    # draw_fov_boundaries(screen, player_screen_x, player_screen_y, right_angle, dir_length)

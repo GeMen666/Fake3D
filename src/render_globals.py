@@ -16,5 +16,5 @@ wall_line = set()      # 可以看见的墙体线段 [((),()),(()()),(()())]
 
 visible_line = set()
 
-visible_node = set()
+visible_nodes = set()
 

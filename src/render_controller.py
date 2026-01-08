@@ -5,16 +5,16 @@ from utils import *
 import config as conf
 from render_calculate import *
 import copy
-from render_globals import visible_grid, nodes, in_fov_nodes, valid_nodes, visible_line, visible_node, wall_line
+from render_globals import visible_grid, nodes, in_fov_nodes, valid_nodes, visible_line, wall_line, visible_nodes
 
 
 def reset_grids():
-    global visible_grid, nodes, in_fov_nodes, valid_nodes, wall_line, visible_line
+    global visible_grid, nodes, in_fov_nodes, valid_nodes, wall_line, visible_line, visible_nodes
     nodes.clear()
     in_fov_nodes.clear()
     valid_nodes.clear()
     wall_line.clear()
-    visible_node.clear()
+    visible_nodes.clear()
     visible_line.clear()
     for i in range(len(visible_grid)):
         for j in range(len(visible_grid[0])):
@@ -115,53 +115,74 @@ def process_fov_ray_node():
             
 
 
-def process_wall_valid_line():
-    global wall_line
-    wall_node = set()
+
+def node_connect():
+    global nodes, valid_nodes
+    nodes.clear()
     for node_x, node_y in valid_nodes:
-        if not valid_nodes[(node_x, node_y)]:
-            continue
-        wall_node.add((node_x, node_y))
-        wall_line = find_wall_line(wall_node)
-    print(wall_line)
-    
+        if valid_nodes[(node_x, node_y)]:
+            nodes.add((node_x, node_y))
+
+
+    connect_node = {}
+    for (node_x1, node_y1) in nodes:
+        connect_node[(node_x1, node_y1)] = []
+
+    for (node_x1, node_y1) in nodes:
+        for (node_x2, node_y2) in nodes:
+            if check_able_connect(node_x1, node_y1, node_x2, node_y2):
+                connect_node[(node_x1, node_y1)].append((node_x2, node_y2))
+                connect_node[(node_x2, node_y2)].append((node_x1, node_y1))
+
+    return connect_node   
 
 
     
 
 def process_visible_line_3D():
-    global visible_line
+    global visible_line, visible_nodes
 
     x_height = {}
 
-    for node_x, node_y in valid_nodes:
-        if not valid_nodes[(node_x, node_y)]:
-            continue
-        radian = math.atan2(node_y - st.player_y, node_x - st.player_x)
+    node_connect()
+
+    connect_node = node_connect()
+    is_complete = {}
+
+    for node_x, node_y in nodes:
+        is_complete[(node_x, node_y)] = False
+
+    def calculate_screen(x, y):
+        radian = math.atan2(y - st.player_y, x - st.player_x)
         angle = math.degrees(radian) - (st.view_angle - conf.FOV / 2)
         if angle < 0:
             angle += 360
-        
-
         screen_x = (angle / conf.FOV) * conf.WINDOW_WIDTH
-
-        distance = math.sqrt((node_x - st.player_x) ** 2 + (node_y - st.player_y) ** 2)
-
+        distance = math.sqrt((x - st.player_x) ** 2 + (y - st.player_y) ** 2)
         wall_height = conf.WALL_SCALE / (distance + 0.1) * 500
+        y_top = conf.HORIZON - wall_height // 2
+        y_bottom = conf.HORIZON + wall_height // 2
+        visible_nodes.add((screen_x, y_top))
+        visible_nodes.add((screen_x, y_bottom))
+        visible_line.add((screen_x, y_top, screen_x, y_bottom))
+        return screen_x, y_top, y_bottom
 
-        if not screen_x in x_height:
-            x_height[screen_x] = wall_height
-        else:
-            if x_height[screen_x] < wall_height:
-                x_height[screen_x] = wall_height
+    for node_x, node_y in nodes:
+        if is_complete[(node_x, node_y)]:
+            continue
+
+        screen_x1, up_y1, down_y1 = calculate_screen(node_x, node_y)
+
+        for node_x, node_y in connect_node[(node_x, node_y)]:
+            if is_complete[(node_x, node_y)]:
+                continue
+
+            screen_x2, up_y2, down_y2 = calculate_screen(node_x, node_y)
+
+            visible_line.add((screen_x1, up_y1, screen_x2, up_y2))
+            visible_line.add((screen_x1, down_y1, screen_x2, down_y2))
 
 
-        y1 = conf.HORIZON - wall_height // 2
-        y2 = conf.HORIZON + wall_height // 2
-
-        visible_node.add((screen_x, y1))
-        visible_node.add((screen_x, y2))
-        visible_line.add((screen_x, y1, screen_x, y2))
         
 
 
@@ -171,4 +192,4 @@ def all_calculate():
     check_nodes_is_visible()
     process_fov_ray_node()
     process_visible_line_3D()
-    process_wall_valid_line()
+    

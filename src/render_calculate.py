@@ -186,71 +186,38 @@ def check_node_valid(node_x, node_y):
 
 
 
-def find_wall_line(wall_node):
-    wall_line = set()
-    for (node_x1, node_y1), (node_x2, node_y2) in combinations(wall_node, 2):
-        if node_x1 == node_x2:
-            if check_on_common_wall_along_y(node_y1, node_x1, node_x2):
-                wall_line.add(((node_x1, node_y1), (node_x2, node_y2)))
-        elif node_y1 == node_y2:
-            if check_on_common_wall_along_x(node_y1, node_x1, node_x2):
-                wall_line.add(((node_x1, node_y1), node_x2, node_y2))
-
-    return wall_line
-
-def check_on_common_wall_along_y(x, node_y1, node_y2):
-
-    def check_along(x1,y1,x2,y2):
+def check_able_connect(node_x1, node_y1, node_x2, node_y2):
+    def check_along_x(x1,y1,x2,y2):
+        if y1 > y2:
+            temp = x1, y1
+            x1, y1 = x2, y2
+            x2, y2 = temp
         while True:
+            if not (check_index_valid(x1, y1) and st.map_data[y1][x1] == 1):
+                return False
+            if x1 == x2 and y1 == y2:
+                return True
             y1 += 1
-            if x1 == x2 and y1 == y2:
-                return True
-            if not (check_index_valid(x1, y1) and st.map_data[y1][x1] == 1):
-                return False
-            
 
-    x1, y1 = get_floor_position(x, node_y1)
-    x2, y2 = get_floor_position(x, node_y2)
-    if y1 > y2:
-        temp = x1, y1
-        x1, y1 = x2, y2
-        x2, y2 = temp
-
-    result = False
-    # 右下或右上是墙，检查右侧
-    if (st.map_data[y1][x1] == 1 or st.map_data[y1-1][x1] == 1) and (st.map_data[y2][x2] == 1 or st.map_data[y2-1][x2] == 1):
-        result = check_along(x1, y1, x2, y2)
-    # 左下或左上是墙，检查左侧
-    if not result and (st.map_data[y1][x1-1] == 1 or st.map_data[y1-1][x1-1] == 1) and (st.map_data[y2][x2-1] == 1 or st.map_data[y2-1][x2-1] == 1):
-        result = check_along(x1-1, y1, x2-1, y2)
-    
-    return result
-
-
-
-def check_on_common_wall_along_x(y, node_x1, node_x2):
-    def check_along(x1,y1,x2,y2):
+    def check_along_y(x1,y1,x2,y2):
+        if x1 > x2:
+            temp = x1, y1
+            x1, y1 = x2, y2
+            x2, y2 = temp
         while True:
-            x1 += 1
-            if x1 == x2 and y1 == y2:
-                return True
             if not (check_index_valid(x1, y1) and st.map_data[y1][x1] == 1):
                 return False
-            
+            if x1 == x2 and y1 == y2:
+                return True
+            x1 += 1
 
-    x1, y1 = get_floor_position(node_x1, y)
-    x2, y2 = get_floor_position(node_x2, y)
-    if x1 > x2:
-        temp = x1, y1
-        x1, y1 = x2, y2
-        x2, y2 = temp
-
-    result = False
-    # 右下或左下是墙，检查下侧
-    if (st.map_data[y1][x1] == 1 or st.map_data[y1][x1-1] == 1) and (st.map_data[y2][x2] == 1 or st.map_data[y2][x2-1] == 1):
-        result = check_along(x1, y1, x2, y2)
-    # 右上或坐上是墙，检查上侧
-    if not result and (st.map_data[y1-1][x1] == 1 or st.map_data[y1-1][x1-1] == 1) and (st.map_data[y2-1][x2] == 1 or st.map_data[y2-1][x2-1] == 1):
-        result = check_along(x1, y1-1, x2, y2-1)
     
-    return result
+    index_x1, index_y1 = get_floor_position(node_x1, node_y1)
+    index_x2, index_y2 = get_floor_position(node_x2, node_y2)
+
+    if check_along_y(index_x1, index_y1, index_x2, index_y2): return True
+    if check_along_y(index_x1-1, index_y1, index_x2-1, index_y2): return True
+    if check_along_x(index_x1, index_y1, index_x2, index_y2): return True
+    if check_along_x(index_x1, index_y1-1, index_x2, index_y2-1): return True
+
+    return False
