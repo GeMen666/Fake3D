@@ -12,10 +12,9 @@ in_fov_nodes = {}       # 节点是否在视野范围内：{(x,y): True/False} �
 
 valid_nodes = {}        # 视野范围节点是否有效（是否是可见墙体节点）：{(x,y): True/False} （像素坐标）
 
-wall_line = []      # 可以看见的墙体线段 [((),()),(()()),(()())]
+wall_line = set()      # 可以看见的墙体线段 [((),()),(()()),(()())]
 
-# t_node = set()
+visible_line = set()
 
-# t_tile = set()
+visible_node = set()
 
-# is_draw = {}

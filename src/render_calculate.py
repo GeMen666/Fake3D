@@ -2,7 +2,8 @@ import math
 import game_state as st
 from utils import *
 import config as conf
-from render_globals import visible_grid,nodes, in_fov_nodes, valid_nodes, wall_line
+from itertools import combinations
+from render_globals import visible_grid,nodes, in_fov_nodes, valid_nodes, visible_line
 
 
 def get_tiles_along_line(x1, y1, x2, y2):
@@ -38,6 +39,7 @@ def get_intersections_in_single_tile(start_x, start_y, tile_x, tile_y, angle):
     tan = math.tan(angle_radians)
     def get_top_botton(target):
         dy = target - start_y
+        if tan == 0: return
         dx = dy / tan
         if left < start_x + dx < right:
             corss_nodes.add((start_x + dx, start_y + dy))
@@ -82,8 +84,6 @@ def get_target_intersections(x, y, angle):
     return min_node
     
     
-    
-
 
 def check_current_tile(tile_pos):
     global nodes, in_fov_nodes, valid_nodes
@@ -186,10 +186,71 @@ def check_node_valid(node_x, node_y):
 
 
 
-def process_ray_node(i):
-    global wall_line
-    if i-1 >= 0 and (wall_line[i-1][0] == wall_line[i][0] or wall_line[i-1][1] == wall_line[i][1]):
-        return (1,0)
-    if i+2 < len(wall_line) and (wall_line[i+2][0] == wall_line[i][0] or wall_line[i+2][1] == wall_line[i][1]):
-        return (0,1)
-    return (1,0)
+def find_wall_line(wall_node):
+    wall_line = set()
+    for (node_x1, node_y1), (node_x2, node_y2) in combinations(wall_node, 2):
+        if node_x1 == node_x2:
+            if check_on_common_wall_along_y(node_y1, node_x1, node_x2):
+                wall_line.add(((node_x1, node_y1), (node_x2, node_y2)))
+        elif node_y1 == node_y2:
+            if check_on_common_wall_along_x(node_y1, node_x1, node_x2):
+                wall_line.add(((node_x1, node_y1), node_x2, node_y2))
+
+    return wall_line
+
+def check_on_common_wall_along_y(x, node_y1, node_y2):
+
+    def check_along(x1,y1,x2,y2):
+        while True:
+            y1 += 1
+            if x1 == x2 and y1 == y2:
+                return True
+            if not (check_index_valid(x1, y1) and st.map_data[y1][x1] == 1):
+                return False
+            
+
+    x1, y1 = get_floor_position(x, node_y1)
+    x2, y2 = get_floor_position(x, node_y2)
+    if y1 > y2:
+        temp = x1, y1
+        x1, y1 = x2, y2
+        x2, y2 = temp
+
+    result = False
+    # 右下或右上是墙，检查右侧
+    if (st.map_data[y1][x1] == 1 or st.map_data[y1-1][x1] == 1) and (st.map_data[y2][x2] == 1 or st.map_data[y2-1][x2] == 1):
+        result = check_along(x1, y1, x2, y2)
+    # 左下或左上是墙，检查左侧
+    if not result and (st.map_data[y1][x1-1] == 1 or st.map_data[y1-1][x1-1] == 1) and (st.map_data[y2][x2-1] == 1 or st.map_data[y2-1][x2-1] == 1):
+        result = check_along(x1-1, y1, x2-1, y2)
+    
+    return result
+
+
+
+def check_on_common_wall_along_x(y, node_x1, node_x2):
+    def check_along(x1,y1,x2,y2):
+        while True:
+            x1 += 1
+            if x1 == x2 and y1 == y2:
+                return True
+            if not (check_index_valid(x1, y1) and st.map_data[y1][x1] == 1):
+                return False
+            
+
+    x1, y1 = get_floor_position(node_x1, y)
+    x2, y2 = get_floor_position(node_x2, y)
+    if x1 > x2:
+        temp = x1, y1
+        x1, y1 = x2, y2
+        x2, y2 = temp
+
+    result = False
+    # 右下或左下是墙，检查下侧
+    if (st.map_data[y1][x1] == 1 or st.map_data[y1][x1-1] == 1) and (st.map_data[y2][x2] == 1 or st.map_data[y2][x2-1] == 1):
+        result = check_along(x1, y1, x2, y2)
+    # 右上或坐上是墙，检查上侧
+    if not result and (st.map_data[y1-1][x1] == 1 or st.map_data[y1-1][x1-1] == 1) and (st.map_data[y2-1][x2] == 1 or st.map_data[y2-1][x2-1] == 1):
+        result = check_along(x1, y1-1, x2, y2-1)
+    
+    return result

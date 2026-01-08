@@ -14,4 +14,8 @@ FOV = 100            # 视野角度
 
 SCALE = 0.6
 
-BASED_POS = (100, 50)  # 基础位置
+BASED_POS = (5, 5)  # 基础位置
+
+HORIZON = WINDOW_HEIGHT / 2
+
+WALL_SCALE = 128

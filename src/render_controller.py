@@ -5,15 +5,17 @@ from utils import *
 import config as conf
 from render_calculate import *
 import copy
-from render_globals import visible_grid, nodes, in_fov_nodes, valid_nodes, wall_line
+from render_globals import visible_grid, nodes, in_fov_nodes, valid_nodes, visible_line, visible_node, wall_line
 
 
 def reset_grids():
-    global visible_grid, nodes, in_fov_nodes, valid_nodes, wall_line
+    global visible_grid, nodes, in_fov_nodes, valid_nodes, wall_line, visible_line
     nodes.clear()
     in_fov_nodes.clear()
     valid_nodes.clear()
     wall_line.clear()
+    visible_node.clear()
+    visible_line.clear()
     for i in range(len(visible_grid)):
         for j in range(len(visible_grid[0])):
             visible_grid[i][j] = False
@@ -106,41 +108,67 @@ def process_fov_ray_node():
         else:
             continue
         index_x, index_y = get_direction_tile(node_x, node_y, direction)
-
         if check_index_valid(index_x, index_y) and st.map_data[index_y][index_x] == 0:
             dx, dy = node_x - st.player_x, node_y - st.player_y
             radian = math.atan2(dy, dx)
             process_node(node_x, node_y, math.degrees(radian))
             
-            
 
 
+def process_wall_valid_line():
+    global wall_line
+    wall_node = set()
+    for node_x, node_y in valid_nodes:
+        if not valid_nodes[(node_x, node_y)]:
+            continue
+        wall_node.add((node_x, node_y))
+        wall_line = find_wall_line(wall_node)
+    print(wall_line)
+    
 
-# def process_wall_valid_node():
-#     global wall_line
-#     left_fov_line = (st.view_angle - conf.FOV / 2) % 360
-#     key = {}
-#     for node_x, node_y in valid_nodes:
-#         if not valid_nodes[(node_x, node_y)]:
-#             continue
-#         dx, dy = node_x - st.player_x, node_y - st.player_y
-#         radian = math.atan2(dy, dx)
-#         angle = (math.degrees(radian) - left_fov_line) % 360
-#         distance = math.sqrt(dx ** 2 + dy ** 2)
-#         wall_line.append((node_x, node_y, angle, distance))
-#         key[(node_x, node_y, angle, distance)] = 1
-#     wall_line.sort(key=lambda x:x[2])
-#     for i in range(len(wall_line) - 2):
-#         if wall_line[i][2] == wall_line[i+1][2]:
-#             key[wall_line[i]], key[wall_line[i+1]] = process_ray_node(i)
+
     
-#     wall_line.sort(key=lambda x:(x[2], -key[x]))
-    
-    
+
+def process_visible_line_3D():
+    global visible_line
+
+    x_height = {}
+
+    for node_x, node_y in valid_nodes:
+        if not valid_nodes[(node_x, node_y)]:
+            continue
+        radian = math.atan2(node_y - st.player_y, node_x - st.player_x)
+        angle = math.degrees(radian) - (st.view_angle - conf.FOV / 2)
+        if angle < 0:
+            angle += 360
+        
+
+        screen_x = (angle / conf.FOV) * conf.WINDOW_WIDTH
+
+        distance = math.sqrt((node_x - st.player_x) ** 2 + (node_y - st.player_y) ** 2)
+
+        wall_height = conf.WALL_SCALE / (distance + 0.1) * 500
+
+        if not screen_x in x_height:
+            x_height[screen_x] = wall_height
+        else:
+            if x_height[screen_x] < wall_height:
+                x_height[screen_x] = wall_height
+
+
+        y1 = conf.HORIZON - wall_height // 2
+        y2 = conf.HORIZON + wall_height // 2
+
+        visible_node.add((screen_x, y1))
+        visible_node.add((screen_x, y2))
+        visible_line.add((screen_x, y1, screen_x, y2))
+        
+
 
 def all_calculate():
     reset_grids()
     bfs_select_tile()
     check_nodes_is_visible()
     process_fov_ray_node()
-    # process_wall_valid_node()
+    process_visible_line_3D()
+    process_wall_valid_line()

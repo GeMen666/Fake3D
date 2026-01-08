@@ -66,6 +66,7 @@ def get_direction_tile(x, y, direction):
     # 4：左下
     elif direction == 4 and x-1 >= 0:
         return x-1, y
+    return -1, -1
 
 
 

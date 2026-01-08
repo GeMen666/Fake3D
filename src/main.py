@@ -3,10 +3,12 @@
 import pygame
 import time
 import config
+import ctypes
 from engine import *
 from input_event import *
 from game_state import *
 from render_draw import draw_small_map
+from render_3D import draw_3D
 from render_controller import all_calculate
 
 
@@ -42,7 +44,7 @@ while running:
     all_calculate()
 
     draw_small_map(screen)
-
+    draw_3D(screen)
     pygame.display.flip()
 
 pygame.quit()
