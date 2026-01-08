@@ -215,9 +215,60 @@ def check_able_connect(node_x1, node_y1, node_x2, node_y2):
     index_x1, index_y1 = get_floor_position(node_x1, node_y1)
     index_x2, index_y2 = get_floor_position(node_x2, node_y2)
 
-    if check_along_y(index_x1, index_y1, index_x2, index_y2): return True
-    if check_along_y(index_x1-1, index_y1, index_x2-1, index_y2): return True
-    if check_along_x(index_x1, index_y1, index_x2, index_y2): return True
-    if check_along_x(index_x1, index_y1-1, index_x2, index_y2-1): return True
+    if check_along_y(index_x1, index_y1, index_x2-1, index_y2): return True
+    if check_along_y(index_x1, index_y1-1, index_x2-1, index_y2-1): return True
+    if check_along_x(index_x1, index_y1, index_x2, index_y2-1): return True
+    if check_along_x(index_x1-1, index_y1, index_x2-1, index_y2-1): return True
 
     return False
+
+        # if y1 > y2:
+        #     temp = x1, y1
+        #     x1, y1 = x2, y2
+        #     x2, y2 = temp
+        # cont = 2
+        # while True:
+        #     if not (check_index_valid(x1, y1) and st.map_data[y1][x1] == 1):
+        #         cont -= 1
+        #     if not (check_index_valid(x1-1, y1) and st.map_data[y1][x1-1] == 1):
+        #         cont -= 1
+        #     if cont == 0: return False
+        #     if x1 == x2 and y1 == y2:
+        #         return True
+        #     x1 += 1
+        #     y1 += 1
+
+# def check_able_connect(node_x1, node_y1, node_x2, node_y2):
+#     def check_along_x(x1,y1,x2,y2):
+#         if x1 > x2:
+#             temp = x1, y1
+#             x1, y1 = x2, y2
+#             x2, y2 = temp
+        
+#         left, right = True, True
+#         while True:
+#             if left and 
+
+            
+
+
+
+#     def check_along_y(x1,y1,x2,y2):
+#         if x1 > x2:
+#             temp = x1, y1
+#             x1, y1 = x2, y2
+#             x2, y2 = temp
+#         while True:
+#             if not (check_index_valid(x1, y1) and st.map_data[y1][x1] == 1):
+#                 return False
+#             if x1 == x2 and y1 == y2:
+#                 return True
+#             x1 += 1
+
+
+
+#     if check_along_y(node_x1, node_y1, node_x2, node_y2): return True
+#     if check_along_x(node_x1, node_y1, node_x2, node_y2): return True
+
+
+#     return False
