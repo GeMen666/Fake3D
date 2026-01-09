@@ -56,24 +56,24 @@ def check_player_move(try_x, try_y):
             temp_x, temp_y = original_try_x, original_try_y
             
             if direction == 0:  # 向上移动：从墙体顶部推出
-                if (check_index_valid(player_tile_x, player_tile_y - 1) and 
-                    st.map_data[player_tile_y - 1][player_tile_x] == 0):
-                    temp_y = top - 1
+                # if (check_index_valid(player_tile_x, player_tile_y - 1) and 
+                #     st.map_data[player_tile_y - 1][player_tile_x] == 0):
+                    temp_y = st.player_y
                     
             elif direction == 1:  # 向右移动：从墙体右侧推出
-                if (check_index_valid(player_tile_x + 1, player_tile_y) and 
-                    st.map_data[player_tile_y][player_tile_x + 1] == 0):
-                    temp_x = right + 1
+                # if (check_index_valid(player_tile_x + 1, player_tile_y) and 
+                #     st.map_data[player_tile_y][player_tile_x + 1] == 0):
+                    temp_x = st.player_x
                     
             elif direction == 2:  # 向下移动：从墙体底部推出
-                if (check_index_valid(player_tile_x, player_tile_y + 1) and 
-                    st.map_data[player_tile_y + 1][player_tile_x] == 0):
-                    temp_y = bottom + 1
+                # if (check_index_valid(player_tile_x, player_tile_y + 1) and 
+                #     st.map_data[player_tile_y + 1][player_tile_x] == 0):
+                    temp_y = st.player_y
                     
             elif direction == 3:  # 向左移动：从墙体左侧推出
-                if (check_index_valid(player_tile_x - 1, player_tile_y) and 
-                    st.map_data[player_tile_y][player_tile_x - 1] == 0):
-                    temp_x = left - 1
+                # if (check_index_valid(player_tile_x - 1, player_tile_y) and 
+                #     st.map_data[player_tile_y][player_tile_x - 1] == 0):
+                    temp_x = st.player_x
             
             if temp_x != original_try_x or temp_y != original_try_y:
                 new_tile_x, new_tile_y = get_floor_position(temp_x, temp_y)

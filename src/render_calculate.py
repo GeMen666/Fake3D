@@ -2,14 +2,13 @@ import math
 import game_state as st
 from utils import *
 import config as conf
-from itertools import combinations
-from render_globals import visible_grid,nodes, in_fov_nodes, valid_nodes, visible_line
+from collections import deque, defaultdict
+from render_globals import visible_grid,nodes, in_fov_nodes, valid_nodes, sorted_nodes
 
 
 def get_tiles_along_line(x1, y1, x2, y2):
     tiles = set()
-    # if x2 - x1 == 0 or y2 - y1 == 0: return tiles
-    rate = (y2 - y1) / (x2 - x1)
+    rate = (y2 - y1) / (x2 - x1 + 0.01)
     correction = 1 if x1 < x2 else -1
     for cur_x in range(int(x1 / st.TILE_SIZE) * st.TILE_SIZE, int(x2), st.TILE_SIZE * correction):
         if not (min(x1, x2) < cur_x < max(x1, x2)): continue
@@ -186,32 +185,82 @@ def check_node_valid(node_x, node_y):
 
 
 
+
+
+def node_connect():
+    global nodes, valid_nodes, sorted_nodes
+
+    nodes.clear()
+    sorted_nodes.clear()
+    for node_x, node_y in valid_nodes:
+        if valid_nodes[(node_x, node_y)]:
+            node_x, node_y = round(node_x, 6), round(node_y, 6)
+            nodes.add((node_x, node_y))
+
+    connect_node = {}
+
+    left_fov_line = (st.view_angle - conf.FOV / 2) % 360
+    
+    for node_x, node_y in nodes:
+        connect_node[(node_x, node_y)] = []
+        dx, dy = node_x - st.player_x, node_y - st.player_y
+        radian = math.atan2(dy, dx)
+        angle = round(math.degrees(radian) - left_fov_line)
+        angle = angle % 360
+        sorted_nodes.append((node_x, node_y, angle))
+
+    sorted_nodes.sort(key=lambda x: x[2])
+
+    for a, b, c in zip(sorted_nodes, sorted_nodes[1:], sorted_nodes[2:]):
+        node_x1, node_y1, angle1 = a
+        node_x2, node_y2, angle2 = b
+        node_x3, node_y3, angle3 = c
+        angle1, angle2, angle3 = round(angle1, 1), round(angle2, 1), round(angle3, 1)
+        print((angle1, angle2, angle3))
+        if angle2 == angle3:
+            if check_able_connect(node_x1, node_y1, node_x2, node_y2):
+                connect_node[(node_x1, node_y1)].append((node_x2, node_y2))
+                connect_node[(node_x2, node_y2)].append((node_x1, node_y1))
+            if check_able_connect(node_x1, node_y1, node_x3, node_y3):
+                connect_node[(node_x2, node_y2)].append((node_x3, node_y3))
+                connect_node[(node_x3, node_y3)].append((node_x2, node_y2))
+        else:
+            connect_node[(node_x1, node_y1)].append((node_x2, node_y2))
+            connect_node[(node_x2, node_y2)].append((node_x1, node_y1))
+        
+    print()
+    return connect_node
+
+
+
 def check_able_connect(node_x1, node_y1, node_x2, node_y2):
-    def check_along_x(x1,y1,x2,y2):
+
+    def check_along_x(x1, y1, x2, y2):
+        if x1 == x2 and y1 == y2:
+            return True
         if y1 > y2:
-            temp = x1, y1
-            x1, y1 = x2, y2
-            x2, y2 = temp
-        while True:
+            x1, y1, x2, y2 = x2, y2, x1, y1
+        while y1 <= y2:
             if not (check_index_valid(x1, y1) and st.map_data[y1][x1] == 1):
                 return False
             if x1 == x2 and y1 == y2:
                 return True
             y1 += 1
+        return False
 
-    def check_along_y(x1,y1,x2,y2):
+    def check_along_y(x1, y1, x2, y2):
+        if x1 == x2 and y1 == y2:
+            return True
         if x1 > x2:
-            temp = x1, y1
-            x1, y1 = x2, y2
-            x2, y2 = temp
-        while True:
+            x1, y1, x2, y2 = x2, y2, x1, y1
+        while x1 <= x2:
             if not (check_index_valid(x1, y1) and st.map_data[y1][x1] == 1):
                 return False
             if x1 == x2 and y1 == y2:
                 return True
             x1 += 1
+        return False
 
-    
     index_x1, index_y1 = get_floor_position(node_x1, node_y1)
     index_x2, index_y2 = get_floor_position(node_x2, node_y2)
 
@@ -222,53 +271,7 @@ def check_able_connect(node_x1, node_y1, node_x2, node_y2):
 
     return False
 
-        # if y1 > y2:
-        #     temp = x1, y1
-        #     x1, y1 = x2, y2
-        #     x2, y2 = temp
-        # cont = 2
-        # while True:
-        #     if not (check_index_valid(x1, y1) and st.map_data[y1][x1] == 1):
-        #         cont -= 1
-        #     if not (check_index_valid(x1-1, y1) and st.map_data[y1][x1-1] == 1):
-        #         cont -= 1
-        #     if cont == 0: return False
-        #     if x1 == x2 and y1 == y2:
-        #         return True
-        #     x1 += 1
-        #     y1 += 1
-
-# def check_able_connect(node_x1, node_y1, node_x2, node_y2):
-#     def check_along_x(x1,y1,x2,y2):
-#         if x1 > x2:
-#             temp = x1, y1
-#             x1, y1 = x2, y2
-#             x2, y2 = temp
-        
-#         left, right = True, True
-#         while True:
-#             if left and 
-
-            
 
 
 
-#     def check_along_y(x1,y1,x2,y2):
-#         if x1 > x2:
-#             temp = x1, y1
-#             x1, y1 = x2, y2
-#             x2, y2 = temp
-#         while True:
-#             if not (check_index_valid(x1, y1) and st.map_data[y1][x1] == 1):
-#                 return False
-#             if x1 == x2 and y1 == y2:
-#                 return True
-#             x1 += 1
 
-
-
-#     if check_along_y(node_x1, node_y1, node_x2, node_y2): return True
-#     if check_along_x(node_x1, node_y1, node_x2, node_y2): return True
-
-
-#     return False

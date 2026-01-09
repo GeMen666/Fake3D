@@ -78,7 +78,6 @@ def check_nodes_is_visible():
 def process_fov_ray_node():
     global nodes, in_fov_nodes, valid_nodes
 
-
     def process_node(node_x, node_y, angle):
         global valid_nodes
         inter_node = get_target_intersections(node_x, node_y, angle)
@@ -113,40 +112,15 @@ def process_fov_ray_node():
             radian = math.atan2(dy, dx)
             process_node(node_x, node_y, math.degrees(radian))
             
-
-
-
-def node_connect():
-    global nodes, valid_nodes
-    nodes.clear()
-    for node_x, node_y in valid_nodes:
-        if valid_nodes[(node_x, node_y)]:
-            nodes.add((node_x, node_y))
-
-
-    connect_node = {}
-    for (node_x1, node_y1) in nodes:
-        connect_node[(node_x1, node_y1)] = []
-
-    for (node_x1, node_y1) in nodes:
-        for (node_x2, node_y2) in nodes:
-            if check_able_connect(node_x1, node_y1, node_x2, node_y2):
-                connect_node[(node_x1, node_y1)].append((node_x2, node_y2))
-                connect_node[(node_x2, node_y2)].append((node_x1, node_y1))
-
-    return connect_node   
-
-
     
 
+
 def process_visible_line_3D():
+
     global visible_line, visible_nodes
 
-    x_height = {}
-
-    node_connect()
-
     connect_node = node_connect()
+
     is_complete = {}
 
     for node_x, node_y in nodes:
@@ -162,10 +136,18 @@ def process_visible_line_3D():
         wall_height = conf.WALL_SCALE / (distance + 0.1) * 500
         y_top = conf.HORIZON - wall_height // 2
         y_bottom = conf.HORIZON + wall_height // 2
+
+        screen_x = screen_x * conf.TEST_SCALE + conf.TEST_BASED[0]
+        y_top = y_top * conf.TEST_SCALE + conf.TEST_BASED[1]
+        y_bottom = y_bottom * conf.TEST_SCALE + conf.TEST_BASED[1]
+
+        if screen_x <= 0: screen_x = 1
+        if screen_x >= conf.WINDOW_WIDTH: screen_x = conf.WINDOW_WIDTH - 1
         visible_nodes.add((screen_x, y_top))
         visible_nodes.add((screen_x, y_bottom))
         visible_line.add((screen_x, y_top, screen_x, y_bottom))
         return screen_x, y_top, y_bottom
+    
 
     for node_x, node_y in nodes:
         if is_complete[(node_x, node_y)]:
@@ -173,15 +155,18 @@ def process_visible_line_3D():
 
         screen_x1, up_y1, down_y1 = calculate_screen(node_x, node_y)
 
-        for node_x, node_y in connect_node[(node_x, node_y)]:
-            if is_complete[(node_x, node_y)]:
+        for next_node_x, next_node_y in connect_node[(node_x, node_y)]:
+            if is_complete[(next_node_x, next_node_y)]:
                 continue
-
-            screen_x2, up_y2, down_y2 = calculate_screen(node_x, node_y)
+            if not (node_x, node_y) in connect_node[(next_node_x, next_node_y)]:
+                continue
+            screen_x2, up_y2, down_y2 = calculate_screen(next_node_x, next_node_y)
 
             visible_line.add((screen_x1, up_y1, screen_x2, up_y2))
             visible_line.add((screen_x1, down_y1, screen_x2, down_y2))
 
+            is_complete[(node_x, node_y)] = True
+            is_complete[(next_node_x, next_node_y)] = True
 
         
 

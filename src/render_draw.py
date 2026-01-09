@@ -4,7 +4,7 @@ import pygame
 import math
 import game_state as st
 import config as conf
-from render_globals import visible_grid, in_fov_nodes, valid_nodes, visible_line, wall_line
+from render_globals import visible_grid, in_fov_nodes, valid_nodes, visible_line, visible_nodes, sorted_nodes
 
 def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_length):
     angle_rad = math.radians(angle)
@@ -13,7 +13,6 @@ def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_len
     pygame.draw.line(screen, (255, 0, 0), (player_screen_x, player_screen_y), (x, y), 1)
 
 def draw_small_map(screen):
-    dir_length = 700 * conf.SCALE
     player_screen_x = conf.BASED_POS[0] + st.player_x * conf.SCALE
     player_screen_y = conf.BASED_POS[1] + st.player_y * conf.SCALE
     # 绘制瓦片
@@ -34,6 +33,17 @@ def draw_small_map(screen):
     pygame.draw.circle(screen, (255, 255, 255), (player_screen_x, player_screen_y), 3)
 
 
+    # 绘制视野
+    for i in range(len(sorted_nodes)):
+        if i == len(sorted_nodes) - 1:
+            break
+        screen_x1, screen_y1 = conf.BASED_POS[0] + sorted_nodes[i][0] * conf.SCALE, conf.BASED_POS[1] + sorted_nodes[i][1] * conf.SCALE
+        screen_x2, screen_y2 = conf.BASED_POS[0] + sorted_nodes[i+1][0] * conf.SCALE, conf.BASED_POS[1] + sorted_nodes[i+1][1] * conf.SCALE
+        pygame.draw.polygon(screen, (200, 200, 200), [(player_screen_x, player_screen_y), (screen_x1, screen_y1), (screen_x2, screen_y2)])
+        pygame.draw.line(screen, (255, 0, 0), (screen_x1, screen_y1), (screen_x2, screen_y2), 1)
+
+
+
 
     # 绘制节点
     for node in in_fov_nodes:
@@ -49,5 +59,22 @@ def draw_small_map(screen):
             color = (255, 0, 0)         # 红色不可见节点
         node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
         node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
-        pygame.draw.circle(screen, color, (node_screen_x, node_screen_y), 1)
+        pygame.draw.circle(screen, color, (node_screen_x, node_screen_y), 2)
+
+
+
+
+
+def draw_3D(screen):
+
+    # #绘制视野边框
+    # rect = pygame.Rect(conf.TEST_BASED[0], conf.TEST_BASED[1], conf.WINDOW_WIDTH * conf.TEST_SCALE, conf.WINDOW_HEIGHT * conf.TEST_SCALE)
+    # pygame.draw.rect(screen, (255, 255, 255), rect, 3)
+    
+    for x1, y1, x2, y2 in visible_line:
+        pygame.draw.line(screen, (255, 255, 255), (x1, y1), (x2, y2), 1)
+    
+    for x, y in visible_nodes:
+        pygame.draw.circle(screen, (0, 255, 0), (x, y), 1)
+
 
