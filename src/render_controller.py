@@ -5,17 +5,18 @@ from utils import *
 import config as conf
 from render_calculate import *
 import copy
-from render_globals import visible_grid, nodes, in_fov_nodes, valid_nodes, visible_line, wall_line, visible_nodes
+from render_globals import visible_grid, nodes, in_fov_nodes, valid_nodes, visible_line, wall_line, visible_nodes, is_ray_node
 
 
 def reset_grids():
-    global visible_grid, nodes, in_fov_nodes, valid_nodes, wall_line, visible_line, visible_nodes
+    global visible_grid, nodes, in_fov_nodes, valid_nodes, wall_line, visible_line, visible_nodes, is_ray_node
     nodes.clear()
     in_fov_nodes.clear()
     valid_nodes.clear()
-    wall_line.clear()
     visible_nodes.clear()
+    wall_line.clear()
     visible_line.clear()
+    is_ray_node.clear()
     for i in range(len(visible_grid)):
         for j in range(len(visible_grid[0])):
             visible_grid[i][j] = False
@@ -76,7 +77,7 @@ def check_nodes_is_visible():
 
 
 def process_fov_ray_node():
-    global nodes, in_fov_nodes, valid_nodes
+    global nodes, in_fov_nodes, valid_nodes, is_ray_node
 
     def process_node(node_x, node_y, angle):
         global valid_nodes
@@ -85,6 +86,8 @@ def process_fov_ray_node():
             return
         in_fov_nodes[(inter_node[0], inter_node[1])] = True
         valid_nodes[(inter_node[0], inter_node[1])] = True
+
+        is_ray_node[(round(inter_node[0]), round(inter_node[1]))] = True
 
     process_node(st.player_x, st.player_y, st.view_angle - conf.FOV / 2)
     process_node(st.player_x, st.player_y, st.view_angle + conf.FOV / 2)
@@ -150,7 +153,7 @@ def process_visible_line_3D():
         return screen_x, y_top, y_bottom
     
     for i in range(len(connect_node)):
-        if i + 1 == len(connect_node) - 1:
+        if i + 1 >= len(connect_node):
             break
         node_x1, node_y1, _ = connect_node[i]
         node_x2, node_y2, _ = connect_node[i+1]

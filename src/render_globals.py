@@ -18,6 +18,8 @@ visible_line = set()
 
 visible_nodes = set()
 
+is_ray_node = {}
+
 
 sorted_nodes = []
 
