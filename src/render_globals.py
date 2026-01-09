@@ -19,5 +19,7 @@ visible_line = set()
 visible_nodes = set()
 
 
-linked_nodes = []
+sorted_nodes = []
+
+
 

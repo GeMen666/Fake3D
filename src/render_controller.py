@@ -5,18 +5,17 @@ from utils import *
 import config as conf
 from render_calculate import *
 import copy
-from render_globals import visible_grid, nodes, in_fov_nodes, valid_nodes, visible_line, wall_line, visible_nodes, linked_nodes
+from render_globals import visible_grid, nodes, in_fov_nodes, valid_nodes, visible_line, wall_line, visible_nodes
 
 
 def reset_grids():
-    global visible_grid, nodes, in_fov_nodes, valid_nodes, wall_line, visible_line, visible_nodes, linked_nodes
+    global visible_grid, nodes, in_fov_nodes, valid_nodes, wall_line, visible_line, visible_nodes
     nodes.clear()
     in_fov_nodes.clear()
     valid_nodes.clear()
     wall_line.clear()
     visible_nodes.clear()
     visible_line.clear()
-    linked_nodes.clear()
     for i in range(len(visible_grid)):
         for j in range(len(visible_grid[0])):
             visible_grid[i][j] = False
@@ -122,19 +121,11 @@ def process_visible_line_3D():
 
     connect_node = node_connect()
 
-    is_complete = {}
-
-    for node_x, node_y in nodes:
-        is_complete[(node_x, node_y)] = False
-
-    angles = []
     def calculate_screen(x, y):
         radian = math.atan2(y - st.player_y, x - st.player_x)
         angle = round(math.degrees(radian) - (st.view_angle - conf.FOV / 2), 2)
         if angle < 0:
             angle += 360
-        angles.append(angle)
-
         screen_x = (angle / conf.FOV) * conf.WINDOW_WIDTH
 
         distance = math.sqrt((x - st.player_x) ** 2 + (y - st.player_y) ** 2)
@@ -158,32 +149,20 @@ def process_visible_line_3D():
         visible_line.add((screen_x, y_top, screen_x, y_bottom))
         return screen_x, y_top, y_bottom
     
-    
-    screen = []
-    for node_x, node_y in nodes:
-        if is_complete[(node_x, node_y)]:
-            continue
+    for i in range(len(connect_node)):
+        if i + 1 == len(connect_node) - 1:
+            break
+        node_x1, node_y1, _ = connect_node[i]
+        node_x2, node_y2, _ = connect_node[i+1]
+        screen_x1, screen_top_y1, screen_bottom_y1 = calculate_screen(node_x1, node_y1)
+        screen_x2, screen_top_y2, screen_bottom_y2 = calculate_screen(node_x2, node_y2)
+        visible_line.add((screen_x1, screen_top_y1, screen_x1, screen_bottom_y1))
+        visible_line.add((screen_x2, screen_top_y2, screen_x2, screen_bottom_y2))
+        visible_line.add((screen_x1, screen_top_y1, screen_x2, screen_top_y2))
+        visible_line.add((screen_x1, screen_bottom_y1, screen_x2, screen_bottom_y2))
 
-        screen_x1, up_y1, down_y1 = calculate_screen(node_x, node_y)
-        screen.append(screen_x1)
 
-        for next_node_x, next_node_y in connect_node[(node_x, node_y)]:
-            if is_complete[(next_node_x, next_node_y)]:
-                continue
-            if not (node_x, node_y) in connect_node[(next_node_x, next_node_y)]:
-                continue
-            linked_nodes.append((node_x, node_y, next_node_x, next_node_y))
-            screen_x2, up_y2, down_y2 = calculate_screen(next_node_x, next_node_y)
 
-            visible_line.add((screen_x1, up_y1, screen_x2, up_y2))
-            visible_line.add((screen_x1, down_y1, screen_x2, down_y2))
-
-            is_complete[(node_x, node_y)] = True
-            is_complete[(next_node_x, next_node_y)] = True
-
-    screen.sort()
-    angles.sort()
-    # print(angles)
 
 
 def all_calculate():

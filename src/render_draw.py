@@ -4,7 +4,7 @@ import pygame
 import math
 import game_state as st
 import config as conf
-from render_globals import visible_grid, in_fov_nodes, valid_nodes, visible_line, visible_nodes, linked_nodes
+from render_globals import visible_grid, in_fov_nodes, valid_nodes, visible_line, visible_nodes, sorted_nodes
 
 def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_length):
     angle_rad = math.radians(angle)
@@ -34,11 +34,11 @@ def draw_small_map(screen):
 
 
     # 绘制视野
-    for i in range(len(linked_nodes)):
-        if i == len(linked_nodes) - 1:
+    for i in range(len(sorted_nodes)):
+        if i == len(sorted_nodes) - 1:
             break
-        screen_x1, screen_y1 = conf.BASED_POS[0] + linked_nodes[i][0] * conf.SCALE, conf.BASED_POS[1] + linked_nodes[i][1] * conf.SCALE
-        screen_x2, screen_y2 = conf.BASED_POS[0] + linked_nodes[i+1][0] * conf.SCALE, conf.BASED_POS[1] + linked_nodes[i+1][1] * conf.SCALE
+        screen_x1, screen_y1 = conf.BASED_POS[0] + sorted_nodes[i][0] * conf.SCALE, conf.BASED_POS[1] + sorted_nodes[i][1] * conf.SCALE
+        screen_x2, screen_y2 = conf.BASED_POS[0] + sorted_nodes[i+1][0] * conf.SCALE, conf.BASED_POS[1] + sorted_nodes[i+1][1] * conf.SCALE
         # pygame.draw.polygon(screen, (200, 200, 200), [(player_screen_x, player_screen_y), (screen_x1, screen_y1), (screen_x2, screen_y2)])
         pygame.draw.line(screen, (255, 0, 0), (screen_x1, screen_y1), (screen_x2, screen_y2), 2)
 
