@@ -3,7 +3,7 @@ import game_state as st
 from utils import *
 import config as conf
 from collections import deque, defaultdict
-from render_globals import visible_grid,nodes, in_fov_nodes, valid_nodes, sorted_nodes
+from render_globals import visible_grid,nodes, in_fov_nodes, valid_nodes
 
 
 def get_tiles_along_line(x1, y1, x2, y2):
@@ -188,90 +188,58 @@ def check_node_valid(node_x, node_y):
 
 
 def node_connect():
-    global nodes, valid_nodes, sorted_nodes
+    global nodes, valid_nodes
 
     nodes.clear()
-    sorted_nodes.clear()
+    sorted_nodes = []
     for node_x, node_y in valid_nodes:
         if valid_nodes[(node_x, node_y)]:
-            node_x, node_y = round(node_x, 6), round(node_y, 6)
+            node_x, node_y = round(node_x, 2), round(node_y, 2)
             nodes.add((node_x, node_y))
 
     connect_node = {}
 
     left_fov_line = (st.view_angle - conf.FOV / 2) % 360
     
+    angles = []
     for node_x, node_y in nodes:
         connect_node[(node_x, node_y)] = []
         dx, dy = node_x - st.player_x, node_y - st.player_y
         radian = math.atan2(dy, dx)
-        angle = round(math.degrees(radian) - left_fov_line)
-        angle = angle % 360
+        angle = round(math.degrees(radian) - left_fov_line) % 360
+        angles.append(angle)
         sorted_nodes.append((node_x, node_y, angle))
-
     sorted_nodes.sort(key=lambda x: x[2])
+    angles.sort()
+    angles = print(angles)
 
     for a, b, c in zip(sorted_nodes, sorted_nodes[1:], sorted_nodes[2:]):
         node_x1, node_y1, angle1 = a
         node_x2, node_y2, angle2 = b
         node_x3, node_y3, angle3 = c
-        angle1, angle2, angle3 = round(angle1, 1), round(angle2, 1), round(angle3, 1)
-        print((angle1, angle2, angle3))
+        angle1, angle2, angle3 = round(angle1), round(angle2), round(angle3)
         if angle2 == angle3:
             if check_able_connect(node_x1, node_y1, node_x2, node_y2):
                 connect_node[(node_x1, node_y1)].append((node_x2, node_y2))
                 connect_node[(node_x2, node_y2)].append((node_x1, node_y1))
-            if check_able_connect(node_x1, node_y1, node_x3, node_y3):
-                connect_node[(node_x2, node_y2)].append((node_x3, node_y3))
-                connect_node[(node_x3, node_y3)].append((node_x2, node_y2))
+            elif check_able_connect(node_x1, node_y1, node_x3, node_y3):
+                connect_node[(node_x1, node_y1)].append((node_x3, node_y3))
+                connect_node[(node_x3, node_y3)].append((node_x1, node_y1))
         else:
             connect_node[(node_x1, node_y1)].append((node_x2, node_y2))
             connect_node[(node_x2, node_y2)].append((node_x1, node_y1))
+
+    
         
-    print()
     return connect_node
 
-
-
-def check_able_connect(node_x1, node_y1, node_x2, node_y2):
-
-    def check_along_x(x1, y1, x2, y2):
-        if x1 == x2 and y1 == y2:
-            return True
-        if y1 > y2:
-            x1, y1, x2, y2 = x2, y2, x1, y1
-        while y1 <= y2:
-            if not (check_index_valid(x1, y1) and st.map_data[y1][x1] == 1):
-                return False
-            if x1 == x2 and y1 == y2:
-                return True
-            y1 += 1
+def check_able_connect(x1, y1, x2, y2):
+    x1, y1 = round(x1), round(y1)
+    x2, y2 = round(x2), round(y2)
+    print((x1/64, x2/64), (y1/64, y2/64))
+    if -5 <= x1 - x2 <= 5 or -5 <= y1 - y2 <= 5:
+        print("True")
+        return True
+    else:
+        print("False")
         return False
-
-    def check_along_y(x1, y1, x2, y2):
-        if x1 == x2 and y1 == y2:
-            return True
-        if x1 > x2:
-            x1, y1, x2, y2 = x2, y2, x1, y1
-        while x1 <= x2:
-            if not (check_index_valid(x1, y1) and st.map_data[y1][x1] == 1):
-                return False
-            if x1 == x2 and y1 == y2:
-                return True
-            x1 += 1
-        return False
-
-    index_x1, index_y1 = get_floor_position(node_x1, node_y1)
-    index_x2, index_y2 = get_floor_position(node_x2, node_y2)
-
-    if check_along_y(index_x1, index_y1, index_x2-1, index_y2): return True
-    if check_along_y(index_x1, index_y1-1, index_x2-1, index_y2-1): return True
-    if check_along_x(index_x1, index_y1, index_x2, index_y2-1): return True
-    if check_along_x(index_x1-1, index_y1, index_x2-1, index_y2-1): return True
-
-    return False
-
-
-
-
-
