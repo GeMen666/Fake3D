@@ -13,23 +13,10 @@ YAW_RANGE = 360        # 水平角度范围（取模360°循环）
 
 
 
-FOV = 80            # 视野角度
+FOV = 120            # 视野角度
 
 
-# SCALE = 0.15
-
-# BASED_POS = (5, 5)  # 基础位置
-
-# TEST_BASED = (0,0)
-
-# TEST_SCALE = 1
-
-
-
-
-
-
-SCALE = 0.6
+SCALE = 0.3
 
 BASED_POS = (5, 5)  # 基础位置
 

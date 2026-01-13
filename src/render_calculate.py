@@ -8,20 +8,29 @@ from render_globals import visible_grid,nodes, in_fov_nodes, valid_nodes, sorted
 
 def get_tiles_along_line(x1, y1, x2, y2):
     tiles = set()
-    rate = (y2 - y1) / (x2 - x1 + 0.01)
+    rate = (y2 - y1) / (x2 - x1 + 0.0000000000001)
     correction = 1 if x1 < x2 else -1
     for cur_x in range(int(x1 / st.TILE_SIZE) * st.TILE_SIZE, int(x2), st.TILE_SIZE * correction):
         if not (min(x1, x2) < cur_x < max(x1, x2)): continue
         cur_y = (cur_x - x1) * rate + y1
+        if not check_node(cur_x, cur_y): continue
         tiles.add((int(cur_x / st.TILE_SIZE), int(cur_y / st.TILE_SIZE)))
         tiles.add((int(cur_x / st.TILE_SIZE) - 1, int(cur_y / st.TILE_SIZE)))
     correction = 1 if y1 < y2 else -1
     for cur_y in range(int(y1 / st.TILE_SIZE) * st.TILE_SIZE, int(y2), st.TILE_SIZE * correction):
         if not (min(y1, y2) < cur_y < max(y1, y2)): continue
         cur_x = (cur_y - y1) / rate + x1
+        if not check_node(cur_x, cur_y): continue
         tiles.add((int(cur_x / st.TILE_SIZE), int(cur_y / st.TILE_SIZE)))
         tiles.add((int(cur_x / st.TILE_SIZE), int(cur_y / st.TILE_SIZE) - 1))
     return tiles
+
+def check_node(x, y):
+    # x, y = round(x), round(y)
+    # if x % st.TILE_SIZE == 0 or y % st.TILE_SIZE == 0:
+    #     return False
+    return True
+
 
 
 def get_tiles_along_ray(start_x, start_y, angle, max_distance):
@@ -192,48 +201,42 @@ def node_connect():
     sorted_nodes.clear()
     for node_x, node_y in valid_nodes:
         if valid_nodes[(node_x, node_y)]:
-            node_x, node_y = round(node_x, 2), round(node_y, 2)
+            node_x, node_y = node_x, node_y
             nodes.add((node_x, node_y))
 
-    left_fov_line = (st.view_angle - conf.FOV / 2) % 360
+    left_fov_line = st.view_angle - conf.FOV / 2
     angles = []
     for node_x, node_y in nodes:
         dx, dy = node_x - st.player_x, node_y - st.player_y
         radian = math.atan2(dy, dx)
-        angle = round(math.degrees(radian) - left_fov_line, 8)
+        angle = math.degrees(radian) - left_fov_line
+        if angle < -1:
+            angle = (angle + 360)
         angles.append(angle)
         sorted_nodes.append((node_x, node_y, angle))
     sorted_nodes.sort(key=lambda x: x[2])
     angles.sort()
-    print(angles)
 
     for i in range(len(sorted_nodes)):
-        if i+2 >= len(sorted_nodes):
-            break
-        node_x1, node_y1, angle1 = sorted_nodes[i]
-        node_x2, node_y2, angle2 = sorted_nodes[i+1]
-        node_x3, node_y3, angle3 = sorted_nodes[i+2]
-        angle1, angle2, angle3 = round(angle1), round(angle2), round(angle3)
-        if angle2 != angle3:
+        if i+1 >= len(sorted_nodes): break
+        node_x1, node_y1, _ = sorted_nodes[i]
+        node_x2, node_y2, _ = sorted_nodes[i+1]
+        if check_able_connect(node_x1, node_y1, node_x2, node_y2):
             continue
-        if angle2 == angle3 and ((round(node_x2), round(node_y2)) in is_ray_node or (round(node_x3), round(node_y3)) in is_ray_node):
-            if check_able_connect(node_x1, node_y1, node_x2, node_y2):
-                continue
-            elif check_able_connect(node_x1, node_y1, node_x3, node_y3):
-                temp = sorted_nodes[i+1]
-                sorted_nodes[i+1] = sorted_nodes[i+2]
-                sorted_nodes[i+2] = temp
-    # print(sorted_nodes)
+        elif i+2 < len(sorted_nodes):
+            temp = sorted_nodes[i+1]
+            sorted_nodes[i+1] = sorted_nodes[i+2]
+            sorted_nodes[i+2] = temp
+
     return sorted_nodes
 
 
+
+
 def check_able_connect(x1, y1, x2, y2):
-    x1, y1 = round(x1), round(y1)
-    x2, y2 = round(x2), round(y2)
-    # print((x1/64, y1/64), (x2/64, y2/64))
-    if -5 <= x1 - x2 <= 5 or -5 <= y1 - y2 <= 5:
-        # print("True")
+    global is_ray_node
+    if -0.1 <= x1 - x2 <= 0.1 or -0.1 <= y1 - y2 <= 0.1:
         return True
-    else:
-        # print("False")
-        return False
+    elif (x1, y1) in is_ray_node and is_ray_node[(x1, y1)] == (x2, y2):
+        return True
+    return False

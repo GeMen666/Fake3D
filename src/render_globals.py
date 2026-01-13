@@ -20,6 +20,8 @@ visible_nodes = set()
 
 is_ray_node = {}
 
+test_nodes = []
+
 
 sorted_nodes = []
 

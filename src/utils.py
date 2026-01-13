@@ -73,7 +73,7 @@ def get_direction_tile(x, y, direction):
 # 检查坐标是否合法
 def check_index_valid(x, y):
     return 0 <= x < len(st.map_data[0]) and 0 <= y < len(st.map_data)
-     
+
 
 def check_line_intersect(a1, a2, b1, b2):
 

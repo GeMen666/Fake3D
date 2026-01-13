@@ -6,7 +6,7 @@ import config
 from engine import *
 from input_event import *
 from game_state import *
-from render_draw import draw_small_map, draw_3D
+from render_draw import all_draw
 from render_controller import all_calculate
 
 
@@ -14,7 +14,7 @@ pygame.init()
 screen = pygame.display.set_mode((config.WINDOW_WIDTH,config.WINDOW_HEIGHT))
 pygame.display.set_caption("test")
 clock = pygame.time.Clock()
-last_time = time.time() 
+last_time = time.time()
 pygame.mouse.set_visible(mouse_visible)
 pygame.event.set_grab(mouse_grabbed)
 
@@ -38,12 +38,10 @@ while running:
             player_move('d')
 
     screen.fill((0, 0, 0))
-    
+
     all_calculate()
 
-    draw_small_map(screen)
-
-    draw_3D(screen)
+    all_draw(screen)
 
     pygame.display.flip()
 

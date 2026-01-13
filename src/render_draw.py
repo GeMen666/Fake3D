@@ -4,7 +4,7 @@ import pygame
 import math
 import game_state as st
 import config as conf
-from render_globals import visible_grid, in_fov_nodes, valid_nodes, visible_line, visible_nodes, sorted_nodes
+from render_globals import visible_grid, in_fov_nodes, valid_nodes, visible_line, visible_nodes, sorted_nodes, test_nodes
 
 def draw_fov_boundaries(screen, player_screen_x, player_screen_y, angle, dir_length):
     angle_rad = math.radians(angle)
@@ -33,18 +33,6 @@ def draw_small_map(screen):
     pygame.draw.circle(screen, (255, 255, 255), (player_screen_x, player_screen_y), 3)
 
 
-    # 绘制视野
-    for i in range(len(sorted_nodes)):
-        if i == len(sorted_nodes) - 1:
-            break
-        screen_x1, screen_y1 = conf.BASED_POS[0] + sorted_nodes[i][0] * conf.SCALE, conf.BASED_POS[1] + sorted_nodes[i][1] * conf.SCALE
-        screen_x2, screen_y2 = conf.BASED_POS[0] + sorted_nodes[i+1][0] * conf.SCALE, conf.BASED_POS[1] + sorted_nodes[i+1][1] * conf.SCALE
-        # pygame.draw.polygon(screen, (200, 200, 200), [(player_screen_x, player_screen_y), (screen_x1, screen_y1), (screen_x2, screen_y2)])
-        pygame.draw.line(screen, (255, 0, 0), (screen_x1, screen_y1), (screen_x2, screen_y2), 2)
-
-
-
-
     # 绘制节点
     for node in in_fov_nodes:
         if in_fov_nodes[node]:
@@ -59,10 +47,22 @@ def draw_small_map(screen):
             color = (255, 0, 0)         # 红色不可见节点
         node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
         node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
-        pygame.draw.circle(screen, color, (node_screen_x, node_screen_y), 3)
+        # pygame.draw.circle(screen, color, (node_screen_x, node_screen_y), 1)
 
+        # 绘制视野
+    for i in range(len(sorted_nodes)):
+        if i == len(sorted_nodes) - 1:
+            break
+        screen_x1, screen_y1 = conf.BASED_POS[0] + sorted_nodes[i][0] * conf.SCALE, conf.BASED_POS[1] + sorted_nodes[i][1] * conf.SCALE
+        screen_x2, screen_y2 = conf.BASED_POS[0] + sorted_nodes[i+1][0] * conf.SCALE, conf.BASED_POS[1] + sorted_nodes[i+1][1] * conf.SCALE
+        # pygame.draw.polygon(screen, (200, 200, 200), [(player_screen_x, player_screen_y), (screen_x1, screen_y1), (screen_x2, screen_y2)])
+        pygame.draw.line(screen, (255, 0, 0), (screen_x1, screen_y1), (screen_x2, screen_y2), 1)
 
-
+    
+    for node in test_nodes:
+        node_screen_x = conf.BASED_POS[0] + node[0] * conf.SCALE
+        node_screen_y = conf.BASED_POS[1] + node[1] * conf.SCALE
+        pygame.draw.circle(screen, (0, 255, 0), (node_screen_x, node_screen_y), 1)
 
 
 def draw_3D(screen):
@@ -77,4 +77,16 @@ def draw_3D(screen):
     for x, y in visible_nodes:
         pygame.draw.circle(screen, (0, 255, 0), (x, y), 1)
 
+def draw_background(screen):
+    # 绘制上半部分蓝色背景
+    rect = pygame.Rect(0, 0, conf.WINDOW_WIDTH, conf.WINDOW_HEIGHT / 2)
+    pygame.draw.rect(screen, (0, 0, 255), rect)
+    
+    # 绘制下半部分绿色背景
+    rect = pygame.Rect(0, conf.WINDOW_HEIGHT / 2, conf.WINDOW_WIDTH, conf.WINDOW_HEIGHT / 2)
+    pygame.draw.rect(screen, (0, 255, 0), rect)
 
+def all_draw(screen):
+    draw_background(screen)
+    draw_small_map(screen)
+    draw_3D(screen)

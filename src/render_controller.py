@@ -5,7 +5,7 @@ from utils import *
 import config as conf
 from render_calculate import *
 import copy
-from render_globals import visible_grid, nodes, in_fov_nodes, valid_nodes, visible_line, wall_line, visible_nodes, is_ray_node
+from render_globals import visible_grid, nodes, in_fov_nodes, valid_nodes, visible_line, wall_line, visible_nodes, is_ray_node, test_nodes
 
 
 def reset_grids():
@@ -16,6 +16,7 @@ def reset_grids():
     visible_nodes.clear()
     wall_line.clear()
     visible_line.clear()
+    test_nodes.clear()
     is_ray_node.clear()
     for i in range(len(visible_grid)):
         for j in range(len(visible_grid[0])):
@@ -82,16 +83,19 @@ def process_fov_ray_node():
     def process_node(node_x, node_y, angle):
         global valid_nodes
         inter_node = get_target_intersections(node_x, node_y, angle)
+
         if inter_node == ():
+            return
+        if -0.05 < node_x - inter_node[0] < 0.05 or -0.05 < node_y - inter_node[1] < 0.05:
             return
         in_fov_nodes[(inter_node[0], inter_node[1])] = True
         valid_nodes[(inter_node[0], inter_node[1])] = True
-
-        is_ray_node[(round(inter_node[0]), round(inter_node[1]))] = True
-
+        test_nodes.append((round(node_x), round(node_y), round(inter_node[0]), round(inter_node[1])))
+        is_ray_node[(node_x, node_y)] = (inter_node[0], inter_node[1])
+        is_ray_node[(inter_node[0], inter_node[1])] = ((node_x, node_y))
+    
     process_node(st.player_x, st.player_y, st.view_angle - conf.FOV / 2)
     process_node(st.player_x, st.player_y, st.view_angle + conf.FOV / 2)
-
 
     valid_nodes_t = copy.deepcopy(valid_nodes)
     for node_x, node_y in valid_nodes_t:
@@ -114,8 +118,8 @@ def process_fov_ray_node():
             dx, dy = node_x - st.player_x, node_y - st.player_y
             radian = math.atan2(dy, dx)
             process_node(node_x, node_y, math.degrees(radian))
-            
-    
+        # print(is_ray_node)
+    # print(test_nodes)
 
 
 def process_visible_line_3D():
@@ -163,8 +167,6 @@ def process_visible_line_3D():
         visible_line.add((screen_x2, screen_top_y2, screen_x2, screen_bottom_y2))
         visible_line.add((screen_x1, screen_top_y1, screen_x2, screen_top_y2))
         visible_line.add((screen_x1, screen_bottom_y1, screen_x2, screen_bottom_y2))
-
-
 
 
 
