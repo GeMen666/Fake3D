@@ -1,4 +1,4 @@
-# calculate.py - 简化版DDA算法
+# calculate.py - Bresenham算法
 
 from utils import check_index_valid
 import math

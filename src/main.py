@@ -6,7 +6,7 @@ from core.engine import *
 from core.input_event import *
 from core.game_state import *
 from render.controller import all_calculate
-from render.draw import draw_small_map
+from render.draw import all_draw
 
 
 pygame.init()
@@ -40,7 +40,7 @@ while running:
 
     all_calculate()
 
-    draw_small_map(screen)  # 修改函数调用
+    all_draw(screen)
 
     pygame.display.flip()
 

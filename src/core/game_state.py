@@ -35,7 +35,7 @@ map_data = [
 # 玩家状态
 player_x = 96.0
 player_y = 96.0
-player_speed = 2
+player_speed = 4
 view_angle = 0.0
 
 

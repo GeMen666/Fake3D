@@ -7,12 +7,11 @@ import math
 
 nodes = {}
 
-def reset():
-    """重置所有射线数据"""
+def all_calculate():
     nodes.clear()
     
     # 计算每条射线
-    for i in range(0,conf.WINDOW_WIDTH, 2):
+    for i in range(0, conf.WINDOW_WIDTH, conf.RAY_STEP):
         # 注意：FOV 是角度，view_angle 是角度
         # 计算当前射线的角度（角度）
         ray_angle_deg = (st.view_angle - conf.FOV / 2 + (conf.FOV * i / conf.WINDOW_WIDTH)) % 360
@@ -27,7 +26,7 @@ def reset():
             ray_angle_rad  # 传入弧度
         )
         
-        # 修正鱼眼效应（需要弧度计算）
+        # 修正鱼眼效应
         view_angle_rad = math.radians(st.view_angle)  # 转换为弧度
         angle_diff = ray_angle_rad - view_angle_rad
         
@@ -38,11 +37,9 @@ def reset():
             angle_diff += 2 * math.pi
         
         distance *= math.cos(angle_diff)
+
+        height = conf.WALL_SCALE * conf.WINDOW_HEIGHT / distance
         
         # 存储结果
-        nodes[i] = (distance, hit_x, hit_y)
-        nodes[i-1] = (distance, hit_x, hit_y)
-
-def all_calculate():
-    """执行所有计算"""
-    reset()
+        for j in range(0, conf.RAY_STEP):
+            nodes[i-j] = ( hit_x, hit_y, height, distance)
