@@ -1,7 +1,7 @@
 # engine 游戏计算
 
 import math
-import game_state as st
+import core.game_state as st
 import config as conf
 from utils import *
 
@@ -26,14 +26,15 @@ def player_move(direction):
     
 
 def check_player_move(try_x, try_y):
-    map_width = len(st.map_data[0]) * st.TILE_SIZE
-    map_height = len(st.map_data) * st.TILE_SIZE
+    map_width = len(st.map_data[0]) * conf.TILE_SIZE
+    map_height = len(st.map_data) * conf.TILE_SIZE
 
     try_x = max(0, min(try_x, map_width - 1))
     try_y = max(0, min(try_y, map_height - 1))
 
 
-    player_tile_x, player_tile_y = get_floor_position(try_x, try_y)
+    player_tile_x = math.floor(try_x // conf.TILE_SIZE)
+    player_tile_y = math.floor(try_y // conf.TILE_SIZE)
 
     if st.map_data[player_tile_y][player_tile_x] == 1:
 

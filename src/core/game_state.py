@@ -1,4 +1,5 @@
 # status.py ：全局数据层（所有跨文件共享的数据都存在这里）
+# src\core\game_state.py
 
 # 地图数据
 map_data = [
@@ -31,14 +32,10 @@ map_data = [
 
 ]
 
-# 游戏配置
-TILE_SIZE = 64
-MOVE_STEP = 1
-
 # 玩家状态
 player_x = 96.0
 player_y = 96.0
-player_speed = 1
+player_speed = 2
 view_angle = 0.0
 
 

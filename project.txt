@@ -1,0 +1,19 @@
+G2/
+├── .idea/
+├── .vscode/
+├── src/
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── engine.py
+│   │   ├── game_state.py
+│   │   └── input_event.py
+│   ├── render/
+│   │   ├── __init__.py
+│   │   ├── calculate.py
+│   │   ├── controller.py
+│   │   ├── draw.py
+│   ├── __init__.py
+│   ├── config.py
+│   ├── main.py
+│   ├── utils.py
+│   └── test.py

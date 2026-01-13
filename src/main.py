@@ -1,13 +1,12 @@
-# main 实现窗口和主循环
-
+# main.py - 主程序入口
 import pygame
 import time
 import config
-from engine import *
-from input_event import *
-from game_state import *
-from render_draw import all_draw
-from render_controller import all_calculate
+from core.engine import *
+from core.input_event import *
+from core.game_state import *
+from render.controller import all_calculate
+from render.draw import draw_small_map
 
 
 pygame.init()
@@ -41,9 +40,8 @@ while running:
 
     all_calculate()
 
-    all_draw(screen)
+    draw_small_map(screen)  # 修改函数调用
 
     pygame.display.flip()
 
 pygame.quit()
-

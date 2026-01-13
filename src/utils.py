@@ -1,13 +1,13 @@
 # utils 提供一些通用的函数
-
-import game_state as st
+import core.game_state as st
 import math
+from config import TILE_SIZE
 
 
 # 获取节点的所在格子向下取整（像素坐标 -> 方格引索）
 def get_floor_position(x, y):
-    pos_x = math.floor(x / st.TILE_SIZE)
-    pos_y = math.floor(y / st.TILE_SIZE)
+    pos_x = math.floor(x // TILE_SIZE)
+    pos_y = math.floor(y // TILE_SIZE)
     return pos_x, pos_y
 
 
@@ -29,7 +29,7 @@ def get_tile_nodes(x, y):
 def get_tile_border(x, y):
     # 边界顺序：上边界0、右边界1、下边界2、左边界3
     #           上边界0                    右边界1                下边界2              左边界3
-    return y * st.TILE_SIZE, (x + 1) * st.TILE_SIZE, (y + 1) * st.TILE_SIZE, x * st.TILE_SIZE
+    return y * TILE_SIZE, (x + 1) * TILE_SIZE, (y + 1) * TILE_SIZE, x * TILE_SIZE
 
 
 # 获取格子某方向的节点的坐标（方格引索 -> 节点像素坐标） 1：左上 2：右上 3：右下 4：左下
