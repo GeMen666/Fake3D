@@ -19,7 +19,7 @@ clock = pygame.time.Clock()
 last_time = time.time()
 pygame.mouse.set_visible(mouse_visible)
 pygame.event.set_grab(mouse_grabbed)
-# 关键步骤：停止文本输入，锁定为英文输入模式
+# 锁定为英文输入模式
 pygame.key.stop_text_input()
 
 running = True

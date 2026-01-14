@@ -17,16 +17,31 @@ def engine_controller():
             player_move('backward')
         if st.key_states['right']:
             player_move('right')
-        if st.jumping:
+        if st.key_states['jump']:
             player_jump()
+        player_crouch()
+
 
 def player_jump():
     # x = vo * t + 1/2at^2
-    st.jump_height = conf.JUMP_SPEED * st.jump_time + (-conf.G) * st.jump_time ** 2 / 2
     st.jump_time += 1
+    st.jump_height = conf.JUMP_SPEED * st.jump_time + (-conf.G) * st.jump_time ** 2 / 2
     if st.jump_height < 0:
         st.jump_height = 0
-        st.jumping = False
+        st.key_states['jump'] = False
+
+
+def player_crouch():
+    if st.key_states['crouch']:
+        if st.crouch_time < 3:
+            st.crouch_time += 1
+            st.crouch_height = -(conf.CROUCH_SPEED * st.crouch_time)
+    else:
+        if st.crouch_time > 0:
+            st.crouch_time -= 1
+            st.crouch_height = -(conf.CROUCH_SPEED * st.crouch_time)
+    
+     
 
 
 def player_move(direction):

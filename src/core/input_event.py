@@ -20,34 +20,37 @@ def paused_control():
     pygame.mouse.set_visible(st.mouse_visible)
     pygame.event.set_grab(st.mouse_grabbed)
 
+
 # 鼠标移动事件处理
 def mouse_move(event):
     # 获取鼠标的相对移动量
     st.rel_x,st.rel_y = event.rel
     st.view_angle = (st.view_angle + conf.MOUSE_SENSITIVITY * st.rel_x) % conf.YAW_RANGE
     st.vertical_view -= st.rel_y 
+    if st.vertical_view >= 800:
+        st.vertical_view = 800
+    elif st.vertical_view <= -600:
+        st.vertical_view = -600
 
 
 # 键盘按下事件处理
 def keyboard_pressed(event):
     if event.key == pygame.K_w:
-        print('forward')
         st.key_states['forward'] = True
     elif event.key == pygame.K_a:
-        print('left')
         st.key_states['left'] = True
     elif event.key == pygame.K_s:
-        print('backward')
         st.key_states['backward'] = True
     elif event.key == pygame.K_d:
-        print('right')
         st.key_states['right'] = True
     elif event.key == pygame.K_SPACE:
-        print('jump')
-        if not st.jumping:
-            st.jumping = True
+        if not st.key_states['jump']:
+            st.key_states['jump'] = True
             st.jump_time = 0
             st.jump_height = 0
+    elif event.key == pygame.K_LSHIFT:
+        if not st.key_states['crouch']:
+            st.key_states['crouch'] = True
 
 
 # 键盘松开事件处理
@@ -60,6 +63,9 @@ def keyboard_released(event):
         st.key_states['backward'] = False
     elif event.key == pygame.K_d:
         st.key_states['right'] = False
+    elif event.key == pygame.K_LSHIFT:
+        st.key_states['crouch'] = False
+
 
 
 

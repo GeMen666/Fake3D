@@ -58,21 +58,29 @@ mouse_grabbed = True
 rel_x = 0
 rel_y = 0
 
-# 玩家跳跃状态
-jumping = False
 
 # 跳跃的时间
 jump_time = 0
 
-# 高度
+# 跳跃高度
 jump_height = 0
+
+# 下蹲位移
+crouch_height = 0
+
+# 下蹲时间
+crouch_time = 0
+
+
 
 # 按键状态
 key_states = {
     'forward': False,
     'backward': False,
     'left': False,
-    'right': False
+    'right': False,
+    'jump': False,
+    'crouch': False
 }
 
 

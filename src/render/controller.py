@@ -23,7 +23,7 @@ def generate_camera_rays():
         distance, hit_x, hit_y = Bresenham(st.player_x, st.player_y, ray_angle_rad)
 
         # 计算透视效果
-        height, jump_offset, y1, y2 = compute_perspective(distance, ray_angle_rad)
+        height, offset, y1, y2 = compute_perspective(distance, ray_angle_rad)
 
 
         # 存储结果
@@ -35,7 +35,7 @@ def generate_camera_rays():
                 'hit_x': hit_x,
                 'hit_y': hit_y,
                 'distance': distance,
-                'jump_offset': jump_offset
+                'offset': offset
             }
         
 
@@ -55,13 +55,15 @@ def compute_perspective(distance, ray_angle_rad):
     height = conf.WALL_HEIGHT * conf.WINDOW_HEIGHT / distance
 
     # 跳跃屏幕偏移
-    jump_offset = st.jump_height * (conf.PROJECTION_CONST / distance)
+    offset = st.jump_height + st.crouch_height
+
+    offset = offset * (conf.PROJECTION_CONST / distance)
 
     # 绘制3D墙（在主视图上）
     y1 = (conf.HORIZON - height) / 2 + conf.BASED_HEIGHT  + st.vertical_view
     y2 = y1 + height
 
-    return height, jump_offset, y1, y2
+    return height, offset, y1, y2
     
 
 

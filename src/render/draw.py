@@ -5,6 +5,7 @@ import pygame
 import config as conf
 from core import game_state as st
 from .controller import ray_data
+from .calculate import Bresenham
 import math
 
 
@@ -46,8 +47,8 @@ def draw_3D(screen):
             g = int(220 * (1 - color_factor) + 100 * color_factor)
             b = int(210 * (1 - color_factor) + 95 * color_factor)
     
-            y1 = ray_data[i]['y1'] + ray_data[i]['jump_offset']
-            y2 = ray_data[i]['y2'] + ray_data[i]['jump_offset']
+            y1 = ray_data[i]['y1'] + ray_data[i]['offset']
+            y2 = ray_data[i]['y2'] + ray_data[i]['offset']
             
             # 绘制3D墙切片
             pygame.draw.line(screen, (r, g, b), (i, y1), (i, y2), 1)
@@ -79,16 +80,18 @@ def draw_small_map(screen):
 
 
 def draw_fov_boundaries(screen):
-    def darw(screen, angle, dir_length):
-        player_screen_x = conf.BASED_POS[0] + st.player_x * conf.SCALE
-        player_screen_y = conf.BASED_POS[1] + st.player_y * conf.SCALE
+    def darw(screen, angle):
         angle_rad = math.radians(angle)
-        x = player_screen_x + math.cos(angle_rad) * dir_length * 2
-        y = player_screen_y + math.sin(angle_rad) * dir_length * 2
+        print(int(angle), int(angle_rad))
+        _, x, y = Bresenham(st.player_x, st.player_y, angle_rad)
+        x = x * conf.SCALE + conf.BASED_POS[0]
+        y = y * conf.SCALE + conf.BASED_POS[1]
         pygame.draw.line(screen, (255, 0, 0), (player_screen_x, player_screen_y), (x, y), 1)
 
-    darw(screen, st.view_angle - conf.FOV / 2, 5)
-    darw(screen, st.view_angle + conf.FOV / 2, 5)
+    player_screen_x = conf.BASED_POS[0] + st.player_x * conf.SCALE
+    player_screen_y = conf.BASED_POS[1] + st.player_y * conf.SCALE
+    darw(screen, st.view_angle - conf.FOV / 2)
+    darw(screen, st.view_angle + conf.FOV / 2)
 
 
 def draw_player(screen):
