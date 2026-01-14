@@ -38,16 +38,22 @@ player_y = 96.0
 
 # 玩家移动速度s
 player_speed = 4
+
 # 玩家视角
 view_angle = 0.0
 
+# 屏幕垂直偏移量，视角
+vertical_view = 0       # 虽然是视角，但是是通过高度计算实现的
 
 # 游戏是否暂停
 paused = False
+
 # 鼠标状态
 mouse_visible = False
+
 # 是否捕获鼠标
 mouse_grabbed = True
+
 # 鼠标移动增量
 rel_x = 0
 rel_y = 0
@@ -60,7 +66,6 @@ jump_time = 0
 
 # 高度
 jump_height = 0
-
 
 # 按键状态
 key_states = {

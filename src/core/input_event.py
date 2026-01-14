@@ -25,6 +25,7 @@ def mouse_move(event):
     # 获取鼠标的相对移动量
     st.rel_x,st.rel_y = event.rel
     st.view_angle = (st.view_angle + conf.MOUSE_SENSITIVITY * st.rel_x) % conf.YAW_RANGE
+    st.vertical_view -= st.rel_y 
 
 
 # 键盘按下事件处理
