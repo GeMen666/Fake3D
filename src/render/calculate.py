@@ -1,54 +1,10 @@
 # calculate.py - Bresenham算法
+# src\render\calculate.py
 
 from utils import check_index_valid
 import math
 import config as conf
 from core import game_state as st
-
-def dda_simple(start_x, start_y, angle_rad):
-    """
-    超简化版DDA
-    参数 angle_rad: 射线角度（弧度）
-    """
-    # 射线方向（使用弧度计算）
-    ray_dir_x = math.cos(angle_rad)
-    ray_dir_y = math.sin(angle_rad)
-    
-    # 起始点
-    x = start_x
-    y = start_y
-    
-    # 每次前进的步长
-    step = 2
-    
-    # 最大步数限制
-    max_steps = int(conf.TILE_SIZE * 20 / step)
-    
-    for i in range(max_steps):
-        # 检查当前网格
-        map_x = int(x // conf.TILE_SIZE)
-        map_y = int(y // conf.TILE_SIZE)
-        
-        # 边界检查
-        if (map_x < 0 or map_x >= len(st.map_data[0]) or 
-            map_y < 0 or map_y >= len(st.map_data)):
-            distance = math.sqrt((x - start_x)**2 + (y - start_y)**2)
-            return distance, x, y
-        
-        # 检查是否击中墙体
-        if st.map_data[map_y][map_x] > 0:
-            distance = math.sqrt((x - start_x)**2 + (y - start_y)**2)
-            return distance, x, y
-        
-        # 向前移动
-        x += ray_dir_x * step
-        y += ray_dir_y * step
-    
-    # 达到最大步数，返回最大距离
-    distance = math.sqrt((x - start_x)**2 + (y - start_y)**2)
-    return distance, x, y
-
-
 
 def Bresenham(start_x, start_y, angle_rad):
 

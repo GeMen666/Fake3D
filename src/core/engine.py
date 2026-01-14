@@ -1,4 +1,5 @@
 # engine 游戏计算
+# src\core\engine.py
 
 import math
 import core.game_state as st
@@ -6,15 +7,37 @@ import config as conf
 from utils import *
 
 
+def engine_controller():
+    if not st.paused:
+        if st.key_states['forward']:
+            player_move('forward')
+        if st.key_states['left']:
+            player_move('left')
+        if st.key_states['backward']:
+            player_move('backward')
+        if st.key_states['right']:
+            player_move('right')
+        if st.jumping:
+            player_jump()
+
+def player_jump():
+    # x = vo * t + 1/2at^2
+    st.jump_height = conf.JUMP_SPEED * st.jump_time + (-conf.G) * st.jump_time ** 2 / 2
+    st.jump_time += 1
+    if st.jump_height < 0:
+        st.jump_height = 0
+        st.jumping = False
+
+
 def player_move(direction):
     angle = 0
-    if direction == 'w':
+    if direction == 'forward':
         angle = math.radians(st.view_angle)
-    elif direction == 's':
+    elif direction == 'backward':
         angle = math.radians(st.view_angle + 180)
-    elif direction == 'a':
+    elif direction == 'left':
         angle = math.radians(st.view_angle - 90)
-    elif direction == 'd':
+    elif direction == 'right':
         angle = math.radians(st.view_angle + 90)
 
     try_x = st.player_x + math.cos(angle) * st.player_speed
@@ -23,7 +46,8 @@ def player_move(direction):
 
     st.player_x, st.player_y = check_player_move(try_x, try_y)
 
-    
+
+
 
 def check_player_move(try_x, try_y):
     map_width = len(st.map_data[0]) * conf.TILE_SIZE

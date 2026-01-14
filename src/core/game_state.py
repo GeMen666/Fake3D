@@ -35,22 +35,37 @@ map_data = [
 # 玩家状态
 player_x = 96.0
 player_y = 96.0
+
+# 玩家移动速度s
 player_speed = 4
+# 玩家视角
 view_angle = 0.0
 
 
-# 游戏状态
+# 游戏是否暂停
 paused = False
+# 鼠标状态
 mouse_visible = False
+# 是否捕获鼠标
 mouse_grabbed = True
+# 鼠标移动增量
 rel_x = 0
 rel_y = 0
+
+# 玩家跳跃状态
+jumping = False
+
+# 跳跃的时间
+jump_time = 0
+
+# 高度
+jump_height = 0
 
 
 # 按键状态
 key_states = {
-    'up': False,
-    'down': False,
+    'forward': False,
+    'backward': False,
     'left': False,
     'right': False
 }

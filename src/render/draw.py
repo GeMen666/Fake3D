@@ -1,4 +1,6 @@
-# render_draw.py 处理渲染逻辑
+# render_draw.py 渲染绘制
+# src\render\draw.py
+
 import pygame
 import config as conf
 from core import game_state as st
@@ -20,12 +22,11 @@ def draw_background(screen):
     map_height = len(st.map_data) * conf.TILE_SIZE
     
     # 绘制上半部分（天蓝色）- 天空
-    horizon_y = conf.HORIZON  # 假设这是屏幕中间的高度
-    upper_rect = pygame.Rect(0, 0, conf.WINDOW_WIDTH, horizon_y)
+    upper_rect = pygame.Rect(0, 0, conf.WINDOW_WIDTH, conf.HORIZON + st.jump_height)
     pygame.draw.rect(screen, (135, 206, 235), upper_rect)  # 天蓝色
     
     # 绘制下半部分（浅绿色）- 地面
-    lower_rect = pygame.Rect(0, horizon_y, conf.WINDOW_WIDTH, conf.WINDOW_HEIGHT - horizon_y)
+    lower_rect = pygame.Rect(0, conf.HORIZON + st.jump_height, conf.WINDOW_WIDTH, conf.WINDOW_HEIGHT - conf.HORIZON - st.jump_height)
     pygame.draw.rect(screen, (107, 142, 35), lower_rect) 
 
 
@@ -34,7 +35,7 @@ def draw_3D(screen):
     for i in range(conf.WINDOW_WIDTH):
         if i in nodes:
             # 绘制3D墙（在主视图上）
-            y1 = (conf.HORIZON - nodes[i][2]) / 2 + conf.BASED_HEIGHT
+            y1 = (conf.HORIZON - nodes[i][2]) / 2 + conf.BASED_HEIGHT + st.jump_height
             y2 = y1 + nodes[i][2] + conf.BASED_HEIGHT
             
             # 根据距离计算墙的颜色（距离越远颜色越深）

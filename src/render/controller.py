@@ -1,4 +1,5 @@
-# controller.py - 修正后的控制器
+# controller.py - 渲染控制器
+# src\render\controller.py
 
 from core import game_state as st
 from .calculate import Bresenham
@@ -19,7 +20,7 @@ def all_calculate():
         # 转换为弧度用于三角函数
         ray_angle_rad = math.radians(ray_angle_deg)
         
-        # 使用简化的DDA算法（传入弧度）
+        # 使用简化的 Bresenham 算法（传入弧度）
         distance, hit_x, hit_y = Bresenham(
             st.player_x, 
             st.player_y, 
@@ -42,4 +43,4 @@ def all_calculate():
         
         # 存储结果
         for j in range(0, conf.RAY_STEP):
-            nodes[i-j] = ( hit_x, hit_y, height, distance)
+            nodes[i-j] = (hit_x, hit_y, height, distance)

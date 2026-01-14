@@ -5,15 +5,13 @@ WINDOW_WIDTH = 1024   # 窗口宽度
 
 WINDOW_HEIGHT = 576   # 窗口高度
 
-FPS = 200       # 目标帧率
+FPS = 200      # 目标帧率
 
 MOUSE_SENSITIVITY = 0.1  # 鼠标灵敏度（越小越慢，越大越快）
 
 YAW_RANGE = 360        # 水平角度范围（取模360°循环）
 
-
 FOV = 80            # 视野角度
-
 
 SCALE = 0.15
 
@@ -32,6 +30,10 @@ HORIZON = WINDOW_HEIGHT / 2
 WALL_SCALE = 128
 
 TILE_SIZE = 64
+
+G = 9.8
+
+JUMP_SPEED = 80
 
 
 # 小地图配色

@@ -1,74 +1,23 @@
 # utils 提供一些通用的函数
+# src\utils.py
+
 import core.game_state as st
 import math
-from config import TILE_SIZE
+import config as conf
 
 
 # 获取节点的所在格子向下取整（像素坐标 -> 方格引索）
 def get_floor_position(x, y):
-    pos_x = math.floor(x // TILE_SIZE)
-    pos_y = math.floor(y // TILE_SIZE)
+    pos_x = math.floor(x // conf.TILE_SIZE)
+    pos_y = math.floor(y // conf.TILE_SIZE)
     return pos_x, pos_y
-
-
-# 获取格子的所有节点（4个角点, 像素坐标）
-def get_tile_nodes(x, y):
-    corners = [
-        (0, 0), (0, 1), (1, 0), (1, 1)
-    ]
-    nodes = []
-    for dx, dy in corners:
-        node_x = (x + dx) * st.TILE_SIZE
-        node_y = (y + dy) * st.TILE_SIZE
-        nodes.append((node_x, node_y))
-    # 节点顺序：上左0、上右1、下右2、下左3
-    return nodes
 
 
 # 获取格子的边界 （方格引索 -> 像素坐标）
 def get_tile_border(x, y):
     # 边界顺序：上边界0、右边界1、下边界2、左边界3
     #           上边界0                    右边界1                下边界2              左边界3
-    return y * TILE_SIZE, (x + 1) * TILE_SIZE, (y + 1) * TILE_SIZE, x * TILE_SIZE
-
-
-# 获取格子某方向的节点的坐标（方格引索 -> 节点像素坐标） 1：左上 2：右上 3：右下 4：左下
-def get_direction_node(x, y, direction):
-    # 1：左上
-    if direction == 1 and y > 0:
-        return x * st.TILE_SIZE, y * st.TILE_SIZE
-    # 2：右上
-    elif direction == 2 and x < len(st.map_data[0]) - 1:
-        return (x + 1) * st.TILE_SIZE, y * st.TILE_SIZE
-    # 3：右下
-    elif direction == 3 and y < len(st.map_data) - 1:
-        return (x + 1) * st.TILE_SIZE, (y + 1) * st.TILE_SIZE
-    # 4：左下
-    elif direction == 4 and x > 0:
-        return x * st.TILE_SIZE, (y + 1) * st.TILE_SIZE
-    else:
-        return -1
-
-
-# 获取像素节点某方向的格子的坐标（节点像素坐标 -> 方格引索） 1：左上 2：右上 3：右下 4：左下
-def get_direction_tile(x, y, direction):
-    # 先获取节点所在的格子（右下）
-    x, y = get_floor_position(x, y)
-    # 1：左上
-    if direction == 1 and x-1 >= 0 and y-1 >= 0:
-        return x-1, y-1
-    # 2：右上
-    elif direction == 2 and y-1 >= 0:
-        return x, y-1
-    # 3：右下
-    elif direction == 3:
-        return x, y
-    # 4：左下
-    elif direction == 4 and x-1 >= 0:
-        return x-1, y
-    return -1, -1
-
-
+    return y * conf.TILE_SIZE, (x + 1) * conf.TILE_SIZE, (y + 1) * conf.TILE_SIZE, x * conf.TILE_SIZE
 
 # 检查坐标是否合法
 def check_index_valid(x, y):
