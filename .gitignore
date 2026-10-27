@@ -6,3 +6,9 @@ __pycache__/
 # IDE
 .idea/
 .vscode/
+
+# Python 虚拟环境
+venv/
+.venv/
+env/
+ENV/
