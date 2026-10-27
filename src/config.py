@@ -11,14 +11,13 @@ MOUSE_SENSITIVITY = 0.1  # 鼠标灵敏度（越小越慢，越大越快）
 
 YAW_RANGE = 360        # 水平角度范围（取模360°循环）
 
-FOV = 80            # 视野角度
+FOV = 80            # 视野范围角度
 
 SCALE = 0.15        # 小地图缩放
 
 BASED_POS = (5, 5)  # 基础位置
 
 BASED_HEIGHT = 70   # 基础高度
-
 
 RAY_STEP = 3    # 射线步进
 
